@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Intelliden — Smart Home OS</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  html, body { margin: 0; background: #f0eee9; font-family: "Geist", -apple-system, system-ui, sans-serif; }
+  * { box-sizing: border-box; }
+</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="theme.jsx"></script>
+<script type="text/babel" src="phone.jsx"></script>
+<script type="text/babel" src="tablet.jsx"></script>
+<script type="text/babel" src="ar.jsx"></script>
+<script type="text/babel" src="watch.jsx"></script>
+<script type="text/babel" src="personas.jsx"></script>
+<script type="text/babel" src="research.jsx"></script>
+
+<script type="text/babel">
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "theme": "dark",
+  "time": "dusk",
+  "persona": "owner"
+}/*EDITMODE-END*/;
+
+function App() {
+  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const pal = getPalette(t.theme, t.time);
+  const household = HOUSEHOLDS[t.persona] || HOUSEHOLDS.owner;
+  const perm = PERMS[t.persona] || PERMS.owner;
+
+  return (
+    <React.Fragment>
+      <DesignCanvas>
+        <DCSection id="dash" title="Intelliden — One home, four surfaces"
+          subtitle="A single smart-home OS, tuned for each form factor. Same household data across all four.">
+
+          <DCArtboard id="phone" label="Phone · iOS · 402 × 874" width={402} height={874}>
+            <IOSDevice width={402} height={874} dark={pal.mode === 'dark'}>
+              <PhoneIntelliden pal={pal} household={household} perm={perm} persona={t.persona}/>
+            </IOSDevice>
+          </DCArtboard>
+
+          <DCArtboard id="tablet" label="Tablet · iPad landscape · 1180 × 820" width={1180} height={820}>
+            <TabletIntelliden pal={pal} household={household} perm={perm} persona={t.persona}/>
+          </DCArtboard>
+
+          <DCArtboard id="ar" label="AR · spatial · 1440 × 820" width={1440} height={820}>
+            <ARIntelliden pal={pal} household={household} perm={perm} persona={t.persona}/>
+          </DCArtboard>
+
+          <DCArtboard id="watch" label="Watch · round · 410 × 500" width={410} height={500}>
+            <WatchIntelliden pal={pal} household={household} perm={perm} persona={t.persona}/>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="personas" title="Three personas, one home"
+          subtitle="Mandatory roles every Intelliden home ships with — Owner, Family, Guest. Permissions, presence and recent activity are scoped per role.">
+          {PERSONAS.map((p) => (
+            <DCArtboard key={p.id} id={p.id} label={`${p.badge} · ${p.role} — ${p.name}`} width={420} height={780}>
+              <PersonaCard p={p} pal={pal}/>
+            </DCArtboard>
+          ))}
+        </DCSection>
+
+        <DCSection id="research" title="How we know — research tactics"
+          subtitle="Three studies that shaped Intelliden's roles, permissions and surface parity. Each card lists method, lead question, findings, a representative quote, and the product decisions it made.">
+          {RESEARCH.map((r) => (
+            <DCArtboard key={r.id} id={r.id} label={`${r.no} · ${r.tactic}`} width={460} height={860}>
+              <ResearchCard r={r} pal={pal}/>
+            </DCArtboard>
+          ))}
+        </DCSection>
+      </DesignCanvas>
+
+      <TweaksPanel title="Intelliden">
+        <TweakSection label="Persona"/>
+        <TweakRadio label="Living as" value={t.persona}
+          options={[
+            {value:'owner',  label:'Owner'},
+            {value:'family', label:'Family'},
+            {value:'guest',  label:'Guest'},
+          ]}
+          onChange={(v) => setTweak('persona', v)}/>
+        <TweakSection label="Theme"/>
+        <TweakRadio label="Mode" value={t.theme}
+          options={[{value:'light',label:'Light'},{value:'dark',label:'Dark'}]}
+          onChange={(v) => setTweak('theme', v)}/>
+        <TweakSection label="Time of day"/>
+        <TweakRadio label="Light" value={t.time}
+          options={[
+            {value:'dawn', label:'Dawn'},
+            {value:'day',  label:'Day'},
+            {value:'dusk', label:'Dusk'},
+            {value:'night',label:'Night'},
+          ]}
+          onChange={(v) => setTweak('time', v)}/>
+      </TweaksPanel>
+    </React.Fragment>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
