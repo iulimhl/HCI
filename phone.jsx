@@ -62,6 +62,7 @@ function PhoneIntelliden({ pal, household, perm, persona }) {
           </div>
           <Avatars members={household.members} pal={pal} max={3}/>
         </div>
+
       </div>
 
       <div style={{ flex: 1, overflow: 'hidden', padding: '0 16px 26px', display: 'flex', flexDirection: 'column', gap: 10 }}>
