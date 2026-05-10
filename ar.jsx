@@ -83,6 +83,7 @@ function ARIntelliden({ pal, household, perm, persona }) {
         </div>
       </ARPanel>
 
+
       <ARPanel pal={pal} x="76%" y="36%" anchor="left" pin="Climate" focused={focus==='therm'}
         title="Thermostat" big={`${thermTarget.toFixed(1)}°`} sub={perm.thermostat?'auto · sun-aware':'view only · owner-only'} onPick={()=>setFocus('therm')} locked={!perm.thermostat}>
         {perm.thermostat ? (

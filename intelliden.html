@@ -28,6 +28,7 @@
 <script type="text/babel" src="watch.jsx"></script>
 <script type="text/babel" src="personas.jsx"></script>
 <script type="text/babel" src="research.jsx"></script>
+<script type="text/babel" src="styleguide.jsx"></script>
 
 <script type="text/babel">
 const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
@@ -83,6 +84,13 @@ function App() {
               <ResearchCard r={r} pal={pal}/>
             </DCArtboard>
           ))}
+        </DCSection>
+
+        <DCSection id="styleguide" title="Design System — Style Guide"
+          subtitle="Colors, typography, icon rules and interface components used across Intelliden.">
+          <DCArtboard id="styleguide-main" label="Style Guide · Visual system" width={900} height={900}>
+            <StyleGuide pal={pal}/>
+          </DCArtboard>
         </DCSection>
       </DesignCanvas>
 

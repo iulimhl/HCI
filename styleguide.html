@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intelliden Style Guide</title>
+
+    <style>
+        body {
+            background: #ECE9E4;
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            color: #3F3A34;
+        }
+
+        h1 {
+            font-size: 48px;
+            margin-bottom: 10px;
+            color: #3F3A34;
+        }
+
+        h2 {
+            margin-top: 60px;
+            margin-bottom: 20px;
+            font-size: 30px;
+            color: #3F3A34;
+        }
+
+        .subtitle {
+            color: #817B72;
+            margin-bottom: 50px;
+            font-size: 18px;
+        }
+
+        .colors {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .color-card {
+            width: 170px;
+            background: white;
+            padding: 14px;
+            border-radius: 18px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .color {
+            height: 105px;
+            border-radius: 16px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(0,0,0,0.08);
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .dark-preview {
+            background: #040816;
+            color: #F8FAFC;
+            padding: 25px;
+            border-radius: 22px;
+            margin-top: 20px;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            background: #F2A65A;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 15px;
+            color: #040816;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .btn-secondary {
+            background: #070B18;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 15px;
+            color: #F8FAFC;
+            font-size: 16px;
+        }
+
+        .btn-glass {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.18);
+            padding: 15px 30px;
+            border-radius: 15px;
+            color: #F8FAFC;
+            font-size: 16px;
+        }
+
+        .component-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+        }
+
+        .component-card {
+            background: #070B18;
+            color: #F8FAFC;
+            padding: 22px;
+            border-radius: 22px;
+        }
+
+        .small-label {
+            color: #9CA3AF;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .big-serif {
+            font-family: Georgia, serif;
+            font-size: 40px;
+            margin: 8px 0;
+        }
+
+        ul {
+            line-height: 2;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        td, th {
+            padding: 14px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            color: #817B72;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>INTELLIDEN — Style Guide</h1>
+
+    <p class="subtitle">
+        Visual identity and interface system for the Intelliden smart home ecosystem.
+    </p>
+
+    <h2>1. Color Palette</h2>
+
+    <div class="colors">
+
+        <div class="color-card">
+            <div class="color" style="background:#040816;"></div>
+            <b>#040816</b>
+            <p>Main dark background</p>
+        </div>
+
+        <div class="color-card">
+            <div class="color" style="background:#070B18;"></div>
+            <b>#070B18</b>
+            <p>Card background</p>
+        </div>
+
+        <div class="color-card">
+            <div class="color" style="background:#ECE9E4;"></div>
+            <b>#ECE9E4</b>
+            <p>Canvas background</p>
+        </div>
+
+        <div class="color-card">
+            <div class="color" style="background:#F2A65A;"></div>
+            <b>#F2A65A</b>
+            <p>Primary warm accent</p>
+        </div>
+
+        <div class="color-card">
+            <div class="color" style="background:#8ECAE6;"></div>
+            <b>#8ECAE6</b>
+            <p>Co-resident accent</p>
+        </div>
+
+        <div class="color-card">
+            <div class="color" style="background:#F4978E;"></div>
+            <b>#F4978E</b>
+            <p>Guest accent</p>
+        </div>
+
+        <div class="color-card">
+            <div class="color" style="background:#4ADE80;"></div>
+            <b>#4ADE80</b>
+            <p>Allowed / active status</p>
+        </div>
+
+        <div class="color-card">
+            <div class="color" style="background:#9CA3AF;"></div>
+            <b>#9CA3AF</b>
+            <p>Secondary text</p>
+        </div>
+
+    </div>
+
+    <h2>2. Typography</h2>
+
+    <div class="card">
+        <p class="small-label">Heading style</p>
+        <div class="big-serif">The Living Room.</div>
+        <p>
+            Large serif headings are used for room names, scene names and important dashboard titles.
+        </p>
+
+        <hr>
+
+        <p class="small-label">Interface text</p>
+        <p style="font-size:18px;">
+            Clean sans-serif typography is used for descriptions, controls, labels and device information.
+        </p>
+
+        <p class="small-label">Technical labels</p>
+        <p style="font-family: monospace;">
+            INTELLIDEN · SPATIAL · OWNER · FULL ACCESS
+        </p>
+    </div>
+
+    <h2>3. Buttons and Controls</h2>
+
+    <div class="dark-preview">
+
+        <p class="small-label">Button examples</p>
+
+        <div class="button-row">
+            <button class="btn-primary">Wake Routine</button>
+            <button class="btn-secondary">Open Devices</button>
+            <button class="btn-glass">Cancel</button>
+        </div>
+
+    </div>
+
+    <h2>4. UI Components</h2>
+
+    <div class="component-grid">
+
+        <div class="component-card">
+            <p class="small-label">Device Card</p>
+            <div class="big-serif">64%</div>
+            <p>Floor lamp · warm 2700K</p>
+            <p style="color:#F2A65A;">Active device state</p>
+        </div>
+
+        <div class="component-card">
+            <p class="small-label">Permission Card</p>
+            <div class="big-serif">Owner</div>
+            <p>Full access to devices, automations, members, locks and energy data.</p>
+            <p style="color:#4ADE80;">ALLOW</p>
+        </div>
+
+        <div class="component-card">
+            <p class="small-label">Guest Mode</p>
+            <div class="big-serif">Scoped</div>
+            <p>Temporary access with limited device control and restricted privacy data.</p>
+            <p style="color:#F4978E;">SCOPED</p>
+        </div>
+
+    </div>
+
+    <h2>5. Icon Style</h2>
+
+    <div class="card">
+        <ul>
+            <li>Minimalist line icons are used across all interfaces.</li>
+            <li>Icons are paired with text labels for clarity.</li>
+            <li>Important states use color: green for allowed, orange for active, coral for limited access.</li>
+            <li>Rounded shapes make the interface feel friendly and easy to use.</li>
+        </ul>
+    </div>
+
+    <h2>6. Spacing and Layout Rules</h2>
+
+    <div class="card">
+        <ul>
+            <li>Consistent spacing based on an 8px grid system.</li>
+            <li>Large rounded cards are used for main actions and device controls.</li>
+            <li>Dark cards sit on a warm neutral canvas background.</li>
+            <li>Soft shadows and blur effects separate interactive elements from the background.</li>
+            <li>Important actions are placed in large touch-friendly areas.</li>
+        </ul>
+    </div>
+
+    <h2>7. Platform Adaptation</h2>
+
+    <div class="card">
+        <table>
+            <tr>
+                <th>Platform</th>
+                <th>Design Focus</th>
+            </tr>
+
+            <tr>
+                <td>Mobile phone / Tablet</td>
+                <td>Dashboard overview, room navigation, device control and household activity.</td>
+            </tr>
+
+            <tr>
+                <td>MR Headset</td>
+                <td>Spatial panels, gaze-based selection, gesture control and room-aware overlays.</td>
+            </tr>
+
+            <tr>
+                <td>Smartwatch</td>
+                <td>Quick routines, glanceable status, minimal controls and fast confirmations.</td>
+            </tr>
+        </table>
+    </div>
+
+    <h2>8. Accessibility Principles</h2>
+
+    <div class="card">
+        <ul>
+            <li>High contrast text for readability in dark environments.</li>
+            <li>Large interaction zones for users with limited computer experience.</li>
+            <li>Color-coded permissions combined with text labels, not color alone.</li>
+            <li>Simple navigation patterns repeated across all devices.</li>
+            <li>Clear feedback after every interaction, such as active states and status messages.</li>
+        </ul>
+    </div>
+
+</body>
+</html>
