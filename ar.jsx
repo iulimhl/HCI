@@ -8,6 +8,22 @@ const AR_ROOM_LABELS = {
   garden: 'The Garden',
 };
 
+const ROOM_GADGETS = {
+  living:  ['lamp', 'sconces', 'strip', 'blinds', 'speaker', 'cam', 'air', 'door', 'energy', 'plug'],
+  kitchen: ['therm', 'plug', 'air'],
+  bed:     ['lamp', 'blinds', 'speaker'],
+  studio:  ['lamp', 'plug'],
+  garden:  ['cam', 'plug', 'air'],
+};
+
+const ROOM_DEFAULT_PANELS = {
+  living:  ['lamp', 'blinds', 'speaker', 'cam'],
+  kitchen: ['therm', 'plug'],
+  bed:     ['lamp', 'blinds'],
+  studio:  ['lamp', 'plug'],
+  garden:  ['cam'],
+};
+
 const GADGET_CATALOG = [
   { id: 'lamp',     pin: 'Floor lamp',   title: 'Floor lamp',    icon: 'bulb',  x: '44%', y: '22%', anchor: 'bottom-right' },
   { id: 'therm',    pin: 'Climate',      title: 'Thermostat',    icon: 'therm', x: '76%', y: '36%', anchor: 'left' },
@@ -152,9 +168,9 @@ function ARCameraOverlay({ pal, onClose }) {
   );
 }
 
-function ARManageDrawer({ pal, activePanels, onAdd, onRemove, onClose }) {
-  const active = GADGET_CATALOG.filter(g => activePanels.includes(g.id));
-  const available = GADGET_CATALOG.filter(g => !activePanels.includes(g.id));
+function ARManageDrawer({ pal, activePanels, catalog, onAdd, onRemove, onClose }) {
+  const active = (catalog || GADGET_CATALOG).filter(g => activePanels.includes(g.id));
+  const available = (catalog || GADGET_CATALOG).filter(g => !activePanels.includes(g.id));
 
   return (
     <div className="int-fadein" style={{
@@ -254,7 +270,7 @@ function ARIntelliden({ pal, household, perm, persona, onPersonaChange }) {
   const [personaOpen, setPersonaOpen] = React.useState(false);
   const [camsOpen, setCamsOpen] = React.useState(false);
   const [manageOpen, setManageOpen] = React.useState(false);
-  const [activePanels, setActivePanels] = React.useState(['lamp', 'therm', 'blinds', 'speaker', 'door', 'cam']);
+  const [panelsByRoom, setPanelsByRoom] = React.useState({ ...ROOM_DEFAULT_PANELS });
   const [toast, showToast] = useToast();
 
   const bg = AR_BG[pal.time] || AR_BG.day;
@@ -293,12 +309,15 @@ function ARIntelliden({ pal, household, perm, persona, onPersonaChange }) {
   const speakerToggle = () => { if (!perm.speakerHandoff && persona==='guest') return blockedToast('Hand-off owner-only'); setSpeakerPlaying(v=>!v); showToast(speakerPlaying?'Paused':'Playing'); };
   const tryLock = () => { if (!perm.lock) return blockedToast('Door lock owner-only'); setDoorLocked(v=>!v); showToast(doorLocked?'Door unlocked':'Door locked'); };
 
+  const activePanels = panelsByRoom[room] || ROOM_DEFAULT_PANELS[room] || [];
+  const roomCatalog = GADGET_CATALOG.filter(g => (ROOM_GADGETS[room] || []).includes(g.id));
+
   const addPanel = (id) => {
-    setActivePanels(prev => [...prev, id]);
+    setPanelsByRoom(prev => ({ ...prev, [room]: [...(prev[room] || []), id] }));
     showToast(`Panel · ${GADGET_CATALOG.find(g=>g.id===id)?.title}`);
   };
   const removePanel = (id) => {
-    setActivePanels(prev => prev.filter(p => p !== id));
+    setPanelsByRoom(prev => ({ ...prev, [room]: (prev[room] || []).filter(p => p !== id) }));
     showToast(`Removed · ${GADGET_CATALOG.find(g=>g.id===id)?.title}`, 'blocked');
   };
 
@@ -557,7 +576,7 @@ function ARIntelliden({ pal, household, perm, persona, onPersonaChange }) {
         <div style={{ position: 'absolute', inset: 9, borderRadius: 2, background: 'rgba(255,255,255,0.85)' }}/>
       </div>
 
-      {manageOpen && <ARManageDrawer pal={pal} activePanels={activePanels} onAdd={addPanel} onRemove={removePanel} onClose={() => setManageOpen(false)}/>}
+      {manageOpen && <ARManageDrawer pal={pal} activePanels={activePanels} catalog={roomCatalog} onAdd={addPanel} onRemove={removePanel} onClose={() => setManageOpen(false)}/>}
       {camsOpen && <ARCameraOverlay pal={pal} onClose={() => setCamsOpen(false)}/>}
       {personaOpen && <PersonaSwitcherModal pal={pal} persona={persona} onPersonaChange={onPersonaChange} onClose={() => setPersonaOpen(false)} glass />}
       <Toast toast={toast} pal={pal}/>

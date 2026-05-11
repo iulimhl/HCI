@@ -233,6 +233,8 @@ function PhoneIntelliden({ pal, household, perm, persona, onPersonaChange }) {
   const [personaOpen, setPersonaOpen] = React.useState(false);
   const [room, setRoom] = React.useState(perm.allowedRooms.length ? perm.allowedRooms[0] : 'living');
   const [dock, setDock] = React.useState('home');
+  const scrollRef = React.useRef(null);
+  React.useEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = 0; }, [room]);
   const [toast, showToast] = useToast();
 
   const isDark = pal.mode === 'dark';
@@ -326,12 +328,12 @@ function PhoneIntelliden({ pal, household, perm, persona, onPersonaChange }) {
         )}
       </div>
 
-      <div style={{ flex: 1, overflow: 'auto', padding: '0 16px 26px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div ref={scrollRef} style={{ flex: 1, overflow: 'auto', padding: '0 16px 26px', display: 'flex', flexDirection: 'column', gap: 10 }}>
 
         {dock === 'home' && (
           <React.Fragment>
             {/* Hero scene */}
-            <div style={{ ...card, padding: 0, overflow: 'hidden', position: 'relative', background: pal.warm + (isDark ? '20' : '14') }}>
+            <div style={{ ...card, padding: 0, position: 'relative', background: pal.warm + (isDark ? '20' : '14') }}>
               <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div>
@@ -366,42 +368,64 @@ function PhoneIntelliden({ pal, household, perm, persona, onPersonaChange }) {
               </div>
             </div>
 
-            {/* Quick tiles */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-              <Tile pal={pal} icon="bulb" label="Floor lamp" sub={livLamp ? `${livLampPct}% · 2700K` : 'off'}
-                on={livLamp} onClick={tryToggleLamp}>
-                {livLamp && (
-                  <div style={{ display: 'flex', gap: 4, marginTop: 6, alignItems: 'center' }}>
-                    <button onClick={(e)=>{e.stopPropagation();setLivLampPct(Math.max(5,livLampPct-10));showToast(`Lamp ${Math.max(5,livLampPct-10)}%`);}} style={miniBtn(pal)}>−</button>
-                    <div style={{ flex: 1, height: 3, background: pal.line, borderRadius: 2 }}>
-                      <div style={{ width: `${livLampPct}%`, height: '100%', background: pal.warm, borderRadius: 2 }}/>
+            {/* Quick tiles — room-specific */}
+            {room === 'living' && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                <Tile pal={pal} icon="bulb" label="Floor lamp" sub={livLamp ? `${livLampPct}% · 2700K` : 'off'} on={livLamp} onClick={tryToggleLamp}>
+                  {livLamp && (
+                    <div style={{ display: 'flex', gap: 4, marginTop: 6, alignItems: 'center' }}>
+                      <button onClick={(e)=>{e.stopPropagation();setLivLampPct(Math.max(5,livLampPct-10));showToast(`Lamp ${Math.max(5,livLampPct-10)}%`);}} style={miniBtn(pal)}>−</button>
+                      <div style={{ flex: 1, height: 3, background: pal.line, borderRadius: 2 }}><div style={{ width: `${livLampPct}%`, height: '100%', background: pal.warm, borderRadius: 2 }}/></div>
+                      <button onClick={(e)=>{e.stopPropagation();setLivLampPct(Math.min(100,livLampPct+10));showToast(`Lamp ${Math.min(100,livLampPct+10)}%`);}} style={miniBtn(pal)}>+</button>
                     </div>
-                    <button onClick={(e)=>{e.stopPropagation();setLivLampPct(Math.min(100,livLampPct+10));showToast(`Lamp ${Math.min(100,livLampPct+10)}%`);}} style={miniBtn(pal)}>+</button>
-                  </div>
-                )}
-              </Tile>
-              <Tile pal={pal} icon="therm" label="Thermostat" sub={`${livTherm.toFixed(1)}° · ${perm.thermostat?'auto':'view only'}`}
-                on={true} accent={pal.warm} locked={!perm.thermostat} onClick={()=>!perm.thermostat&&blockedToast('Thermostat owner-only')}>
-                {perm.thermostat && (
-                  <div style={{ display: 'flex', gap: 4, marginTop: 6 }}>
-                    <button onClick={(e)=>{e.stopPropagation();tryThermBump(-0.5);}} style={miniBtn(pal)}>−</button>
-                    <button onClick={(e)=>{e.stopPropagation();tryThermBump(0.5);}} style={miniBtn(pal)}>+</button>
-                  </div>
-                )}
-              </Tile>
-              <Tile pal={pal} icon="blind" label="Blinds" sub={`${livBlinds}% open`} on={livBlinds > 0}>
-                <input type="range" min="0" max="100" value={livBlinds} onChange={(e)=>tryBlinds(+e.target.value)} onClick={(e)=>e.stopPropagation()}
-                  style={{ width: '100%', marginTop: 4, accentColor: pal.warm }}/>
-              </Tile>
-              <Tile pal={pal} icon={doorLocked?'lock':'unlock'} label="Front door" sub={doorLocked?'locked · 2h':'unlocked'} on={doorLocked} accent={pal.cool}
-                locked={!perm.lock} onClick={tryLock}/>
-              <Tile pal={pal} icon={speakerPlaying?'pause':'play'} label="Speaker" sub={speakerPlaying?'playing':'paused'}
-                on={speakerPlaying} locked={!perm.speakerHandoff && persona==='guest'} onClick={trySpeaker}/>
-              <Tile pal={pal} icon="wave" label="Air quality" sub="312 ppm · CO₂" on={true}/>
-              <Tile pal={pal} icon="cam" label="Camera" sub={perm.cameras ? '2 live · front' : 'hidden'}
-                on={perm.cameras} locked={!perm.cameras} onClick={() => perm.cameras ? setDock('cams') : blockedToast('Cameras owner-only')}/>
-              <Tile pal={pal} icon="plug" label="Smart plug" sub="3 active · 42W" on={true}/>
-            </div>
+                  )}
+                </Tile>
+                <Tile pal={pal} icon="therm" label="Thermostat" sub={`${livTherm.toFixed(1)}° · ${perm.thermostat?'auto':'view only'}`} on={true} accent={pal.warm} locked={!perm.thermostat} onClick={()=>!perm.thermostat&&blockedToast('Thermostat owner-only')}>
+                  {perm.thermostat && (<div style={{ display: 'flex', gap: 4, marginTop: 6 }}><button onClick={(e)=>{e.stopPropagation();tryThermBump(-0.5);}} style={miniBtn(pal)}>−</button><button onClick={(e)=>{e.stopPropagation();tryThermBump(0.5);}} style={miniBtn(pal)}>+</button></div>)}
+                </Tile>
+                <Tile pal={pal} icon="blind" label="Blinds" sub={`${livBlinds}% open`} on={livBlinds > 0}>
+                  <input type="range" min="0" max="100" value={livBlinds} onChange={(e)=>tryBlinds(+e.target.value)} onClick={(e)=>e.stopPropagation()} style={{ width: '100%', marginTop: 4, accentColor: pal.warm }}/>
+                </Tile>
+                <Tile pal={pal} icon={doorLocked?'lock':'unlock'} label="Front door" sub={doorLocked?'locked · 2h':'unlocked'} on={doorLocked} accent={pal.cool} locked={!perm.lock} onClick={tryLock}/>
+                <Tile pal={pal} icon={speakerPlaying?'pause':'play'} label="Speaker" sub={speakerPlaying?'playing':'paused'} on={speakerPlaying} locked={!perm.speakerHandoff && persona==='guest'} onClick={trySpeaker}/>
+                <Tile pal={pal} icon="wave" label="Air quality" sub="312 ppm · CO₂" on={true}/>
+                <Tile pal={pal} icon="cam" label="Camera" sub={perm.cameras ? '2 live · front' : 'hidden'} on={perm.cameras} locked={!perm.cameras} onClick={() => perm.cameras ? setDock('cams') : blockedToast('Cameras owner-only')}/>
+                <Tile pal={pal} icon="plug" label="Smart plug" sub="3 active · 42W" on={true}/>
+              </div>
+            )}
+            {room === 'kitchen' && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                <Tile pal={pal} icon="bulb" label="Pendants" sub="on · 80%" on={true} onClick={()=>showToast('Pendants 80%')}/>
+                <Tile pal={pal} icon="plug" label="Coffee maker" sub="standby · 3W" on={false} onClick={()=>showToast('Coffee maker on')}/>
+                <Tile pal={pal} icon="wave" label="Air sensor" sub="22.1° · CO₂ ok" on={true}/>
+                <Tile pal={pal} icon="plug" label="Smart plug" sub="dishwasher · 42W" on={true}/>
+                <Tile pal={pal} icon="therm" label="Thermostat" sub={`${livTherm.toFixed(1)}° · climate`} on={true} locked={!perm.thermostat} onClick={()=>!perm.thermostat&&blockedToast('Thermostat owner-only')}/>
+              </div>
+            )}
+            {room === 'bed' && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                <Tile pal={pal} icon="bulb" label="Bedside lamp" sub="off · warm" on={false} onClick={()=>showToast('Bedside lamp on')}/>
+                <Tile pal={pal} icon="blind" label="Blinds" sub="closed · blackout" on={false} onClick={()=>showToast('Blinds open')}/>
+                <Tile pal={pal} icon="play" label="Mini speaker" sub="off" on={false} onClick={()=>showToast('Speaker on')}/>
+                <Tile pal={pal} icon="therm" label="Thermostat" sub={`${livTherm.toFixed(1)}° · auto`} on={true} locked={!perm.thermostat} onClick={()=>!perm.thermostat&&blockedToast('Thermostat owner-only')}/>
+              </div>
+            )}
+            {room === 'studio' && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                <Tile pal={pal} icon="bulb" label="Desk lamp" sub="on · 40%" on={true} onClick={()=>showToast('Desk lamp toggled')}/>
+                <Tile pal={pal} icon="plug" label="Monitor" sub="on · 28W" on={true}/>
+                <Tile pal={pal} icon="plug" label="Smart plug" sub="audio · 12W" on={true}/>
+                <Tile pal={pal} icon="wave" label="Air sensor" sub="21.8° · CO₂ ok" on={true}/>
+              </div>
+            )}
+            {room === 'garden' && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                <Tile pal={pal} icon="bulb" label="Path lights" sub="off · dusk-timer" on={false} onClick={()=>showToast('Path lights on')}/>
+                <Tile pal={pal} icon="cam" label="Garden cam" sub={perm.cameras ? 'live · outdoor' : 'hidden'} on={perm.cameras} locked={!perm.cameras} onClick={() => perm.cameras ? setDock('cams') : blockedToast('Cameras owner-only')}/>
+                <Tile pal={pal} icon="plug" label="Smart plug" sub="irrigation · 8W" on={true}/>
+                <Tile pal={pal} icon="wave" label="Air quality" sub="AQI 32 · good" on={true}/>
+              </div>
+            )}
 
             {/* Energy */}
             {perm.energy ? (
