@@ -22,7 +22,7 @@ function ARRoomScene({ roomId, bg, pal, lampPct }) {
       <div style={{ position: 'absolute', right: '12%', top: '14%', width: '18%', height: '38%', borderLeft: `0.5px solid ${bg.frame}`, borderRight: `0.5px solid ${bg.frame}` }}/>
       <div style={{ position: 'absolute', right: '21%', top: '14%', width: '0.5px', height: '38%', background: bg.frame }}/>
       <div style={{ position: 'absolute', left: '6%', top: '54%', width: '55%', height: '12%', background: bg.sofa, borderRadius: '4px 4px 0 0' }}/>
-      <div style={{ position: 'absolute', left: '6%', top: '22%', width: '40%', height: '24%', border: `0.5px solid ${bg.frame}`, borderRadius: 2, borderBottom: 'none' }}/>
+      <div style={{ position: 'absolute', left: '6%', top: '22%', width: '40%', height: '24%', borderLeft: `0.5px solid ${bg.frame}`, borderRight: `0.5px solid ${bg.frame}`, borderTop: `0.5px solid ${bg.frame}`, borderRadius: 2 }}/>
       <div style={{ position: 'absolute', left: '20%', top: '16%', width: 18, height: 18, borderRadius: 9, background: pal.warm, boxShadow: `0 0 ${60*lampPct/64}px 18px ${pal.warm}55`, opacity: lampPct/100 + 0.2 }}/>
       <div style={{ position: 'absolute', left: '28%', top: '16%', width: 18, height: 18, borderRadius: 9, background: pal.warm, boxShadow: `0 0 ${60*lampPct/64}px 18px ${pal.warm}55`, opacity: lampPct/100 + 0.2 }}/>
       {common}
