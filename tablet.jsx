@@ -189,7 +189,7 @@ function TabletDockGear({ pal, perm, household, showToast }) {
   return (
     <div style={{ flex: 1, overflow: 'auto', padding: '20px 28px 24px', display: 'grid', gridTemplateColumns: '260px 1fr', gap: 32 }}>
       <div>
-        <div style={{ width: 72, height: 72, borderRadius: 36, background: perm.tone, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, fontWeight: 700, fontFamily: '"JetBrains Mono", ui-monospace, monospace' }}>{household.badge}</div>
+        <div style={{ width: 56, height: 56, borderRadius: 28, background: perm.tone, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 700, fontFamily: '"JetBrains Mono", ui-monospace, monospace', letterSpacing: '.04em' }}>{household.members[0]?.mono || perm.label[0]}</div>
         <div style={{ fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 30, marginTop: 14, lineHeight: 1 }}>{household.home}.</div>
         <div style={{ fontSize: 12, color: muted, marginTop: 6 }}>{household.address}</div>
         <div style={{ marginTop: 12, display: 'inline-block', padding: '5px 12px', borderRadius: 8, background: perm.tone.replace(')', ' / 0.15)'), border: `1px solid ${perm.tone.replace(')', ' / 0.3)')}`, color: perm.tone, fontSize: 10.5, fontFamily: '"JetBrains Mono", ui-monospace, monospace', letterSpacing: '.08em', textTransform: 'uppercase' }}>{perm.label}</div>
@@ -390,7 +390,7 @@ function TabletIntelliden({ pal, household, perm, persona, onPersonaChange }) {
                 </div>
               </div>
 
-              <div style={{ display: 'flex', gap: 6, marginTop: 18, flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: 6, marginTop: 18, flexWrap: 'nowrap', overflowX: 'auto', paddingBottom: 2 }}>
                 {SCENES.map(s => {
                   const sel = s.id === scene;
                   const blocked = perm.blockedScenes.includes(s.id) || (perm.allowedScenes.length && !perm.allowedScenes.includes(s.id));
