@@ -1,6 +1,6 @@
 // tablet.jsx — Intelliden tablet dashboard with persona gating + interactivity.
 
-function TabletIntelliden({ pal, household, perm, persona }) {
+function TabletIntelliden({ pal, household, perm, persona, onPersonaChange }) {
   const allowedRoom = perm.allowedRooms.length ? perm.allowedRooms[0] : 'living';
   const [room, setRoom] = React.useState(allowedRoom);
   const [scene, setScene] = React.useState(perm.allowedScenes.length ? perm.allowedScenes[0] : 'focus');
@@ -10,6 +10,8 @@ function TabletIntelliden({ pal, household, perm, persona }) {
   const [blinds, setBlinds] = React.useState(40);
   const [speakerPlaying, setSpeakerPlaying] = React.useState(false);
   const [thermTarget, setThermTarget] = React.useState(21.5);
+  const [doorLocked, setDoorLocked] = React.useState(true);
+  const [personaOpen, setPersonaOpen] = React.useState(false);
   const [toast, showToast] = useToast();
 
   const ink = pal.ink, muted = pal.muted, line = pal.line;
@@ -28,6 +30,19 @@ function TabletIntelliden({ pal, household, perm, persona }) {
     if (perm.blockedScenes.includes(scene)) setScene(visibleScenes(perm)[0]?.id || 'focus');
   }, [persona]);
 
+  // Scene presets — update device states when scene changes
+  React.useEffect(() => {
+    const p = SCENE_PRESETS[scene];
+    if (p) {
+      setFloorLamp(p.lampPct > 0);
+      setSconces(p.sconcesOn);
+      setStrip(p.stripOn);
+      setBlinds(p.blinds);
+      setThermTarget(p.thermTarget);
+      setSpeakerPlaying(p.speakerPlaying);
+    }
+  }, [scene]);
+
   const pickRoom = (r) => {
     if (perm.allowedRooms.length && !perm.allowedRooms.includes(r.id)) return blockedToast(`${r.name} not shared`);
     setRoom(r.id);
@@ -40,6 +55,10 @@ function TabletIntelliden({ pal, household, perm, persona }) {
   const bumpTherm = (d) => {
     if (!perm.thermostat) return blockedToast('Thermostat owner-only');
     const v = +(thermTarget + d).toFixed(1); setThermTarget(v); showToast(`Target ${v}°`);
+  };
+  const tryLock = () => {
+    if (!perm.lock) return blockedToast('Door lock is owner-only');
+    setDoorLocked(v => !v); showToast(`Door ${!doorLocked ? 'locked' : 'unlocked'}`);
   };
 
   return (
@@ -55,7 +74,10 @@ function TabletIntelliden({ pal, household, perm, persona }) {
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           <span style={{ width: 7, height: 7, borderRadius: 4, background: perm.tone, boxShadow: `0 0 0 4px ${perm.tone}25` }}/>
           <span>Intelliden v4.2 · {pal.todLabel}</span>
-          <span style={{ marginLeft: 6, padding: '3px 8px', borderRadius: 8, background: perm.tone+'22', color: perm.tone, fontWeight: 500, letterSpacing: '.08em', textTransform: 'uppercase' }}>{household.badge}</span>
+          <button onClick={() => setPersonaOpen(true)} className="int-press" style={{ marginLeft: 6, padding: '3px 10px', borderRadius: 8, background: perm.tone+'22', color: perm.tone, fontWeight: 500, letterSpacing: '.08em', textTransform: 'uppercase', border: `1px solid ${perm.tone}44`, cursor: 'pointer', fontFamily: '"JetBrains Mono", ui-monospace, monospace', fontSize: 11.5, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+            {household.badge}
+            <svg width="8" height="5" viewBox="0 0 8 5"><path d="M1 1l3 3 3-3" fill="none" stroke={perm.tone} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          </button>
         </div>
         <div style={{ display: 'flex', gap: 18 }}>
           <span>{visibleRooms(perm).length} rooms · {perm.allowedRooms.length ? 'shared' : 'all'}</span>
@@ -173,6 +195,11 @@ function TabletIntelliden({ pal, household, perm, persona }) {
             <DeviceCard pal={pal} title="Speaker" icon={speakerPlaying?'pause':'play'} value={speakerPlaying?'playing':'paused'} sub={perm.speakerHandoff?"june's session":'shared playback'} on={speakerPlaying} locked={!perm.speakerHandoff && persona==='guest'}
               onClick={()=>{ if(!perm.speakerHandoff && persona==='guest') return blockedToast('Hand-off owner-only'); setSpeakerPlaying(v=>!v); showToast(`${!speakerPlaying?'Playing':'Paused'}`); }}/>
             <DeviceCard pal={pal} title="Air" icon="wave" value="312 ppm" sub="CO₂ rising" on={true}/>
+            <DeviceCard pal={pal} title="Front door" icon={doorLocked?'lock':'unlock'} value={doorLocked?'locked':'unlocked'} sub={doorLocked?'secure · 2h':'open'} on={doorLocked} locked={!perm.lock}
+              onClick={tryLock}/>
+            <DeviceCard pal={pal} title="Camera" icon="cam" value={perm.cameras?'2 live':'hidden'} sub={perm.cameras?'front · garden':'no access'} on={perm.cameras} locked={!perm.cameras}
+              onClick={()=>!perm.cameras&&blockedToast('Cameras owner-only')}/>
+            <DeviceCard pal={pal} title="Smart plug" icon="plug" value="42W" sub="3 active · kitchen" on={true}/>
           </div>
         </div>
 
@@ -239,6 +266,7 @@ function TabletIntelliden({ pal, household, perm, persona }) {
       </div>
 
       <Toast toast={toast} pal={pal}/>
+      {personaOpen && <PersonaSwitcherModal pal={pal} persona={persona} onPersonaChange={onPersonaChange} onClose={() => setPersonaOpen(false)} />}
     </div>
   );
 }

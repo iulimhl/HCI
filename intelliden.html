@@ -51,16 +51,16 @@ function App() {
 
           <DCArtboard id="phone" label="Phone · iOS · 402 × 874" width={402} height={874}>
             <IOSDevice width={402} height={874} dark={pal.mode === 'dark'}>
-              <PhoneIntelliden pal={pal} household={household} perm={perm} persona={t.persona}/>
+              <PhoneIntelliden pal={pal} household={household} perm={perm} persona={t.persona} onPersonaChange={(v) => setTweak('persona', v)}/>
             </IOSDevice>
           </DCArtboard>
 
           <DCArtboard id="tablet" label="Tablet · iPad landscape · 1180 × 820" width={1180} height={820}>
-            <TabletIntelliden pal={pal} household={household} perm={perm} persona={t.persona}/>
+            <TabletIntelliden pal={pal} household={household} perm={perm} persona={t.persona} onPersonaChange={(v) => setTweak('persona', v)}/>
           </DCArtboard>
 
           <DCArtboard id="ar" label="AR · spatial · 1440 × 820" width={1440} height={820}>
-            <ARIntelliden pal={pal} household={household} perm={perm} persona={t.persona}/>
+            <ARIntelliden pal={pal} household={household} perm={perm} persona={t.persona} onPersonaChange={(v) => setTweak('persona', v)}/>
           </DCArtboard>
 
           <DCArtboard id="watch" label="Watch · round · 410 × 500" width={410} height={500}>

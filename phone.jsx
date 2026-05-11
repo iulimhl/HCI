@@ -1,12 +1,15 @@
 // phone.jsx — Intelliden phone dashboard with persona gating + live state.
 
-function PhoneIntelliden({ pal, household, perm, persona }) {
+function PhoneIntelliden({ pal, household, perm, persona, onPersonaChange }) {
   const [scene, setScene] = React.useState(perm.allowedScenes.length ? perm.allowedScenes[0] : 'focus');
   const [livLamp, setLivLamp] = React.useState(true);
   const [livLampPct, setLivLampPct] = React.useState(64);
   const [livTherm, setLivTherm] = React.useState(21.4);
   const [livBlinds, setLivBlinds] = React.useState(40);
   const [doorLocked, setDoorLocked] = React.useState(true);
+  const [speakerPlaying, setSpeakerPlaying] = React.useState(false);
+  const [personaOpen, setPersonaOpen] = React.useState(false);
+  const [room, setRoom] = React.useState(perm.allowedRooms.length ? perm.allowedRooms[0] : 'living');
   const [dock, setDock] = React.useState('home');
   const [toast, showToast] = useToast();
 
@@ -17,8 +20,24 @@ function PhoneIntelliden({ pal, household, perm, persona }) {
 
   const scenesList = visibleScenes(perm);
   const sceneObj = SCENES.find(s => s.id === scene) || scenesList[0];
+  const roomData = ROOMS.find(r => r.id === room) || ROOMS[0];
   const recent = recentFor(perm);
   const blockedToast = (msg) => showToast(msg, 'blocked');
+
+  React.useEffect(() => {
+    const p = SCENE_PRESETS[scene];
+    if (p) {
+      setLivLampPct(p.lampPct);
+      setLivLamp(p.lampPct > 0);
+      setLivTherm(p.thermTarget);
+      setLivBlinds(p.blinds);
+      setSpeakerPlaying(p.speakerPlaying);
+    }
+  }, [scene]);
+
+  React.useEffect(() => {
+    if (perm.allowedRooms.length && !perm.allowedRooms.includes(room)) setRoom(perm.allowedRooms[0]);
+  }, [persona]);
 
   const pickScene = (s) => {
     if (perm.blockedScenes.includes(s.id)) return blockedToast(`${s.name} is owner-only`);
@@ -37,6 +56,10 @@ function PhoneIntelliden({ pal, household, perm, persona }) {
     if (!perm.lock) return blockedToast('Door is owner-only');
     setDoorLocked(v => !v); showToast(`Door ${!doorLocked ? 'locked' : 'unlocked'}`);
   };
+  const trySpeaker = () => {
+    if (!perm.speakerHandoff && persona === 'guest') return blockedToast('Speaker is restricted');
+    setSpeakerPlaying(v => !v); showToast(`Speaker ${!speakerPlaying ? 'playing' : 'paused'}`);
+  };
 
   return (
     <div style={{
@@ -49,9 +72,22 @@ function PhoneIntelliden({ pal, household, perm, persona }) {
 
       {/* Header */}
       <div style={{ padding: '6px 22px 12px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, letterSpacing: '.16em', textTransform: 'uppercase', color: muted, fontFamily: '"JetBrains Mono", ui-monospace, monospace' }}>
-          <span style={{ width: 6, height: 6, borderRadius: 3, background: perm.tone, boxShadow: `0 0 0 4px ${perm.tone}25` }}/>
-          <span>Intelliden · {household.badge}</span>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11, letterSpacing: '.16em', textTransform: 'uppercase', color: muted, fontFamily: '"JetBrains Mono", ui-monospace, monospace' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ width: 6, height: 6, borderRadius: 3, background: perm.tone, boxShadow: `0 0 0 4px ${perm.tone.replace(')', ' / 0.15)')}` }}/>
+            <span>Intelliden</span>
+          </div>
+          <button onClick={() => setPersonaOpen(true)} className="int-press" style={{
+            height: 24, padding: '0 9px', borderRadius: 12,
+            background: perm.tone.replace(')', ' / 0.12)'), border: `1px solid ${perm.tone.replace(')', ' / 0.25)')}`,
+            color: perm.tone, fontSize: 10, fontWeight: 600,
+            fontFamily: '"JetBrains Mono", ui-monospace, monospace',
+            letterSpacing: '.08em', textTransform: 'uppercase',
+            cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4,
+          }}>
+            <span style={{ width: 5, height: 5, borderRadius: 3, background: perm.tone }} />
+            {perm.label}
+          </button>
         </div>
         <div style={{ marginTop: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
           <div>
@@ -62,10 +98,9 @@ function PhoneIntelliden({ pal, household, perm, persona }) {
           </div>
           <Avatars members={household.members} pal={pal} max={3}/>
         </div>
-
       </div>
 
-      <div style={{ flex: 1, overflow: 'hidden', padding: '0 16px 26px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div style={{ flex: 1, overflow: 'auto', padding: '0 16px 26px', display: 'flex', flexDirection: 'column', gap: 10 }}>
 
         {/* Hero scene */}
         <div style={{ ...card, padding: 0, overflow: 'hidden', position: 'relative', background: pal.warm + (isDark ? '20' : '14') }}>
@@ -132,25 +167,52 @@ function PhoneIntelliden({ pal, household, perm, persona }) {
           </Tile>
           <Tile pal={pal} icon={doorLocked?'lock':'unlock'} label="Front door" sub={doorLocked?'locked · 2h':'unlocked'} on={doorLocked} accent={pal.cool}
             locked={!perm.lock} onClick={tryLock}/>
+          <Tile pal={pal} icon={speakerPlaying?'pause':'play'} label="Speaker" sub={speakerPlaying?'playing':'paused'}
+            on={speakerPlaying} locked={!perm.speakerHandoff && persona==='guest'} onClick={trySpeaker}/>
+          <Tile pal={pal} icon="wave" label="Air quality" sub="312 ppm · CO₂" on={true}/>
+          <Tile pal={pal} icon="cam" label="Camera" sub={perm.cameras ? '2 live · front' : 'hidden'}
+            on={perm.cameras} locked={!perm.cameras} onClick={() => !perm.cameras && blockedToast('Cameras owner-only')}/>
+          <Tile pal={pal} icon="plug" label="Smart plug" sub="3 active · 42W" on={true}/>
         </div>
+
+        {/* Energy */}
+        {perm.energy ? (
+          <div style={{ ...card, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 12, fontWeight: 500 }}>Energy today</div>
+              <div style={{ fontSize: 10.5, color: muted, fontFamily: '"JetBrains Mono", ui-monospace, monospace' }}>{ENERGY.todayKwh.toFixed(2)} kWh · ↘ 19%</div>
+            </div>
+            <div style={{ width: 80, height: 24 }}>
+              <svg width="80" height="24" viewBox="0 0 80 24">
+                <path d={sparkPath(ENERGY.hourly, 80, 24, 2)} fill="none" stroke={pal.warm} strokeWidth="1.2" strokeLinejoin="round"/>
+              </svg>
+            </div>
+          </div>
+        ) : (
+          <div style={{ ...card, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Glyph name="eyeoff" size={14} stroke={muted}/>
+            <div style={{ fontSize: 12, color: muted }}>Energy data is owner-only</div>
+          </div>
+        )}
 
         {/* Rooms */}
         <div style={{ ...card, padding: '12px 14px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
             <div style={{ fontSize: 10.5, letterSpacing: '.16em', textTransform: 'uppercase', color: muted, fontFamily: '"JetBrains Mono", ui-monospace, monospace' }}>
-              Rooms · {visibleRooms(perm).length}{perm.allowedRooms.length ? ` of ${ROOMS.length}` : ''}
+              {roomData.name} · {roomData.temp.toFixed(1)}° · {roomData.devices} dev
             </div>
             <Glyph name="arrow" size={13} stroke={muted}/>
           </div>
           <div style={{ display: 'flex', gap: 8, overflowX: 'auto' }}>
-            {ROOMS.map((r, i) => {
+            {ROOMS.map((r) => {
               const allowed = !perm.allowedRooms.length || perm.allowedRooms.includes(r.id);
+              const sel = r.id === room;
               return (
-                <div key={r.id} onClick={()=>!allowed&&blockedToast(`${r.name} not shared`)} style={{
+                <div key={r.id} onClick={() => { if (!allowed) return blockedToast(`${r.name} not shared`); setRoom(r.id); showToast(`${r.name}`); }} style={{
                   flex: '0 0 auto', width: 102, padding: 11, borderRadius: 13,
-                  background: i === 0 && allowed ? pal.ink : surface2,
-                  color: i === 0 && allowed ? pal.bg : ink,
-                  border: i === 0 && allowed ? 'none' : `0.5px solid ${line}`,
+                  background: sel && allowed ? pal.ink : surface2,
+                  color: sel && allowed ? pal.bg : ink,
+                  border: sel && allowed ? 'none' : `0.5px solid ${line}`,
                   display: 'flex', flexDirection: 'column', gap: 12, cursor: 'pointer',
                   opacity: allowed ? 1 : 0.45, position: 'relative',
                 }}>
@@ -196,6 +258,8 @@ function PhoneIntelliden({ pal, household, perm, persona }) {
       </div>
 
       <Toast toast={toast} pal={pal}/>
+
+      {personaOpen && <PersonaSwitcherModal pal={pal} persona={persona} onPersonaChange={onPersonaChange} onClose={() => setPersonaOpen(false)} />}
 
       {/* Dock */}
       <div style={{ padding: '0 16px 28px' }}>

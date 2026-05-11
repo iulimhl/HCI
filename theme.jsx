@@ -144,6 +144,15 @@ const ENERGY = {
   hourly: [0.18,0.16,0.14,0.13,0.12,0.14,0.22,0.34,0.41,0.38,0.33,0.31,0.36,0.29,0.27,0.26,0.31,0.38,0.46,0.52,0.49,0.40,0.30,0.22],
 };
 
+const SCENE_PRESETS = {
+  wake:  { lampPct: 80, thermTarget: 21.5, blinds: 70, speakerPlaying: true,  sconcesOn: false, stripOn: true  },
+  focus: { lampPct: 64, thermTarget: 21.0, blinds: 40, speakerPlaying: false, sconcesOn: false, stripOn: false },
+  meal:  { lampPct: 90, thermTarget: 22.0, blinds: 50, speakerPlaying: true,  sconcesOn: true,  stripOn: true  },
+  wind:  { lampPct: 30, thermTarget: 19.5, blinds: 10, speakerPlaying: true,  sconcesOn: true,  stripOn: false },
+  movie: { lampPct: 5,  thermTarget: 20.0, blinds: 0,  speakerPlaying: false, sconcesOn: false, stripOn: true  },
+  away:  { lampPct: 0,  thermTarget: 18.0, blinds: 0,  speakerPlaying: false, sconcesOn: false, stripOn: false },
+};
+
 // Selectors that respect persona perms — used by every surface.
 function visibleRooms(perm) {
   return perm.allowedRooms.length ? ROOMS.filter(r => perm.allowedRooms.includes(r.id)) : ROOMS;
@@ -247,15 +256,72 @@ if (typeof document !== 'undefined' && !document.getElementById('intelliden-anim
   s.id = 'intelliden-anim';
   s.textContent = `
     @keyframes twk-toast { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translate(-50%, 0); } }
+    @keyframes int-fadein-kf { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes int-pulse { 0%,100%{opacity:.5} 50%{opacity:1} }
     @keyframes int-press { 0%{transform:scale(1)} 50%{transform:scale(.96)} 100%{transform:scale(1)} }
     .int-press:active { animation: int-press .25s cubic-bezier(.3,.7,.4,1); }
-    .int-fadein { animation: twk-toast .3s cubic-bezier(.2,.7,.3,1); }
+    .int-fadein { animation: int-fadein-kf .3s cubic-bezier(.2,.7,.3,1); }
   `;
   document.head.appendChild(s);
 }
 
+function PersonaSwitcherModal({ pal, persona, onPersonaChange, onClose, glass }) {
+  const isDark = pal.mode === 'dark';
+  const personaList = [
+    { id: 'owner', label: 'Owner', name: 'June Reyes', mono: 'JR', tint: 'oklch(0.74 0.14 65)', tone: 'oklch(0.74 0.14 65)', desc: 'Full admin · all rooms & devices' },
+    { id: 'family', label: 'Family', name: 'Theo Marek', mono: 'TM', tint: 'oklch(0.66 0.05 220)', tone: 'oklch(0.66 0.05 150)', desc: 'Shared access · personal rooms' },
+    { id: 'guest', label: 'Guest', name: 'Marcus Reyes', mono: 'MR', tint: 'oklch(0.78 0.10 30)', tone: 'oklch(0.66 0.10 280)', desc: 'Temporary · 2 rooms, 3 scenes' },
+  ];
+
+  const bgOverlay = glass ? 'rgba(0,0,0,0.5)' : (isDark ? 'rgba(0,0,0,0.6)' : 'rgba(0,0,0,0.35)');
+  const cardBg = glass ? 'rgba(28,22,16,0.78)' : pal.surface;
+  const cardBorder = glass ? '0.5px solid rgba(255,255,255,0.16)' : `0.5px solid ${pal.line}`;
+  const textColor = glass ? '#fff' : pal.ink;
+  const mutedColor = glass ? 'rgba(255,255,255,0.6)' : pal.muted;
+  const closeBg = glass ? 'rgba(255,255,255,0.08)' : pal.surface2;
+  const closeBorder = glass ? '0.5px solid rgba(255,255,255,0.14)' : `0.5px solid ${pal.line}`;
+
+  return (
+    <div style={{ position: 'absolute', inset: 0, zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div onClick={onClose} style={{ position: 'absolute', inset: 0, background: bgOverlay, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }} />
+      <div className="int-fadein" style={{
+        position: 'relative', zIndex: 1, background: cardBg, borderRadius: 22, border: cardBorder,
+        ...(glass ? { backdropFilter: 'blur(24px) saturate(160%)', WebkitBackdropFilter: 'blur(24px) saturate(160%)' } : {}),
+        padding: 20, width: 'calc(100% - 48px)', maxWidth: 340, boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+      }}>
+        <div style={{ fontSize: 10.5, letterSpacing: '.18em', textTransform: 'uppercase', color: mutedColor, fontFamily: '"JetBrains Mono", ui-monospace, monospace', marginBottom: 4 }}>Switch persona</div>
+        <div style={{ fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 26, lineHeight: 1, color: textColor, marginBottom: 16 }}>Who are you?</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {personaList.map(p => {
+            const selected = p.id === persona;
+            return (
+              <button key={p.id} onClick={() => { onPersonaChange(p.id); onClose(); }} className="int-press" style={{
+                display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 14,
+                background: selected ? (glass ? 'rgba(255,255,255,0.12)' : (isDark ? 'rgba(255,255,255,0.08)' : p.tone.replace(')', ' / 0.12)'))) : 'transparent',
+                border: selected ? `1px solid ${glass ? 'rgba(255,255,255,0.25)' : p.tone}` : (glass ? '0.5px solid rgba(255,255,255,0.12)' : `0.5px solid ${pal.line}`),
+                cursor: 'pointer', fontFamily: 'inherit', color: textColor, textAlign: 'left',
+              }}>
+                <div style={{ width: 38, height: 38, borderRadius: 19, background: p.tint, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 600, fontFamily: '"JetBrains Mono", ui-monospace, monospace' }}>{p.mono}</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: selected ? (glass ? '#fff' : p.tone) : textColor }}>{p.name}</div>
+                  <div style={{ fontSize: 11, color: mutedColor, marginTop: 2 }}>{p.label} · {p.desc}</div>
+                </div>
+                {selected && <Glyph name="check" size={16} stroke={glass ? '#fff' : p.tone} sw={2} />}
+              </button>
+            );
+          })}
+        </div>
+        <button onClick={onClose} style={{
+          width: '100%', height: 40, borderRadius: 20, marginTop: 14,
+          background: closeBg, border: closeBorder,
+          color: mutedColor, fontSize: 13, fontWeight: 500, fontFamily: 'inherit', cursor: 'pointer',
+        }}>Close</button>
+      </div>
+    </div>
+  );
+}
+
 Object.assign(window, {
-  TOD, getPalette, HOUSEHOLDS, PERMS, ROOMS, SCENES, RECENT_BASE, recentFor, ENERGY,
-  visibleRooms, visibleScenes, Glyph, sparkPath, useToast, Toast,
+  TOD, getPalette, HOUSEHOLDS, PERMS, ROOMS, SCENES, RECENT_BASE, recentFor, ENERGY, SCENE_PRESETS,
+  visibleRooms, visibleScenes, Glyph, sparkPath, useToast, Toast, PersonaSwitcherModal,
 });
