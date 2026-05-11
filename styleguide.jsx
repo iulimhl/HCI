@@ -24,7 +24,7 @@ function StyleGuide({ pal }) {
       padding: 36,
       boxSizing: "border-box",
       fontFamily: '"Geist", -apple-system, system-ui, sans-serif',
-      overflow: "hidden"
+      overflowY: "auto"
     }}>
 
       <div style={{
