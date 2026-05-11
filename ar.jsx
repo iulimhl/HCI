@@ -8,6 +8,20 @@ const AR_ROOM_LABELS = {
   garden: 'The Garden',
 };
 
+const GADGET_CATALOG = [
+  { id: 'lamp',     pin: 'Floor lamp',   title: 'Floor lamp',    icon: 'bulb',  x: '44%', y: '22%', anchor: 'bottom-right' },
+  { id: 'therm',    pin: 'Climate',      title: 'Thermostat',    icon: 'therm', x: '76%', y: '36%', anchor: 'left' },
+  { id: 'blinds',   pin: 'Blinds',       title: 'Blinds',        icon: 'blind', x: '14%', y: '44%', anchor: 'right' },
+  { id: 'speaker',  pin: 'Speaker',      title: 'Speaker',       icon: 'play',  x: '68%', y: '68%', anchor: 'top-left' },
+  { id: 'door',     pin: 'Front door',   title: 'Front door',    icon: 'lock',  x: '88%', y: '48%', anchor: 'left' },
+  { id: 'cam',      pin: 'Camera',       title: 'Camera',        icon: 'cam',   x: '30%', y: '68%', anchor: 'top-right' },
+  { id: 'air',      pin: 'Air quality',  title: 'Air quality',   icon: 'wave',  x: '55%', y: '55%', anchor: 'top-left' },
+  { id: 'energy',   pin: 'Energy',       title: 'Energy today',  icon: 'bulb',  x: '20%', y: '28%', anchor: 'right' },
+  { id: 'plug',     pin: 'Smart plug',   title: 'Smart plug',    icon: 'plug',  x: '60%', y: '32%', anchor: 'bottom-left' },
+  { id: 'sconces',  pin: 'Sconces',      title: 'Sconces',       icon: 'lamp',  x: '35%', y: '42%', anchor: 'bottom-right' },
+  { id: 'strip',    pin: 'LED strip',    title: 'LED strip',     icon: 'bulb',  x: '72%', y: '26%', anchor: 'bottom-left' },
+];
+
 function ARRoomScene({ roomId, bg, pal, lampPct }) {
   const common = (
     <React.Fragment>
@@ -67,7 +81,6 @@ function ARRoomScene({ roomId, bg, pal, lampPct }) {
     </div>
   );
 
-  // Default: living room
   return (
     <div style={{ position: 'absolute', inset: 0 }}>
       <div style={{ position: 'absolute', left: '6%', top: '8%', width: '34%', height: '60%', background: bg.window, borderRadius: 4, boxShadow: `0 0 200px 60px ${bg.windowGlow}` }}/>
@@ -139,6 +152,94 @@ function ARCameraOverlay({ pal, onClose }) {
   );
 }
 
+function ARManageDrawer({ pal, activePanels, onAdd, onRemove, onClose }) {
+  const active = GADGET_CATALOG.filter(g => activePanels.includes(g.id));
+  const available = GADGET_CATALOG.filter(g => !activePanels.includes(g.id));
+
+  return (
+    <div className="int-fadein" style={{
+      position: 'absolute', inset: 0, display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+      zIndex: 150,
+    }}>
+      <div onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)' }}/>
+      <div className="int-fadein" style={{
+        position: 'relative', width: '100%', maxWidth: 860,
+        background: 'rgba(16,12,8,0.94)', backdropFilter: 'blur(32px)', WebkitBackdropFilter: 'blur(32px)',
+        borderLeft: '0.5px solid rgba(255,255,255,0.12)', borderRight: '0.5px solid rgba(255,255,255,0.12)',
+        borderTop: '0.5px solid rgba(255,255,255,0.12)',
+        borderRadius: '22px 22px 0 0', padding: '20px 28px 36px',
+      }}>
+        {/* Drag handle */}
+        <div style={{ width: 40, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.18)', margin: '0 auto 20px' }}/>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
+          <div>
+            <div style={{ fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 28, color: '#fff', lineHeight: 1 }}>Manage panels</div>
+            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.45)', fontFamily: '"JetBrains Mono", ui-monospace, monospace', marginTop: 4 }}>drag panels to reposition · click × to remove</div>
+          </div>
+          <button onClick={onClose} className="int-press" style={{ width: 34, height: 34, borderRadius: 17, background: 'rgba(255,255,255,0.08)', border: '0.5px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.7)', cursor: 'pointer', fontSize: 18, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+        </div>
+
+        {/* Active panels */}
+        <div style={{ fontSize: 9, letterSpacing: '.22em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', fontFamily: '"JetBrains Mono", ui-monospace, monospace', marginBottom: 10 }}>
+          Active · {active.length} panel{active.length !== 1 ? 's' : ''}
+        </div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 28 }}>
+          {active.map(g => (
+            <div key={g.id} style={{
+              display: 'flex', alignItems: 'center', gap: 8,
+              padding: '8px 10px 8px 12px', borderRadius: 12,
+              background: pal.warm.replace(')', ' / 0.15)'),
+              border: `0.5px solid ${pal.warm.replace(')', ' / 0.35)')}`,
+            }}>
+              <Glyph name={g.icon} size={12} stroke={pal.warm}/>
+              <span style={{ fontSize: 12, color: '#fff', fontWeight: 500 }}>{g.title}</span>
+              <button onClick={() => onRemove(g.id)} className="int-press" style={{
+                width: 18, height: 18, borderRadius: 9, padding: 0,
+                background: 'rgba(255,255,255,0.10)', border: '0.5px solid rgba(255,255,255,0.20)',
+                color: 'rgba(255,255,255,0.65)', fontSize: 13, lineHeight: 1,
+                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>×</button>
+            </div>
+          ))}
+          {active.length === 0 && (
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', fontStyle: 'italic' }}>No active panels</div>
+          )}
+        </div>
+
+        {/* Available gadgets */}
+        <div style={{ fontSize: 9, letterSpacing: '.22em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', fontFamily: '"JetBrains Mono", ui-monospace, monospace', marginBottom: 12 }}>
+          Add panel
+        </div>
+        {available.length > 0 ? (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: 10 }}>
+            {available.map(g => (
+              <button key={g.id} onClick={() => { onAdd(g.id); }} className="int-press" style={{
+                padding: '14px 12px', borderRadius: 16, cursor: 'pointer', textAlign: 'left',
+                background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(255,255,255,0.10)',
+                color: '#fff', fontFamily: 'inherit',
+                display: 'flex', flexDirection: 'column', gap: 8,
+                transition: 'background .15s',
+              }}>
+                <div style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Glyph name={g.icon} size={16} stroke="rgba(255,255,255,0.65)"/>
+                </div>
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 600 }}>{g.title}</div>
+                  <div style={{ fontSize: 9.5, color: 'rgba(255,255,255,0.4)', fontFamily: '"JetBrains Mono", ui-monospace, monospace', marginTop: 2 }}>{g.pin}</div>
+                </div>
+                <div style={{ alignSelf: 'flex-start', padding: '3px 8px', borderRadius: 6, background: pal.warm.replace(')', ' / 0.20)'), border: `0.5px solid ${pal.warm.replace(')', ' / 0.4)')}`, fontSize: 9, color: pal.warm, fontFamily: '"JetBrains Mono", ui-monospace, monospace', letterSpacing: '.04em' }}>+ Add</div>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', fontStyle: 'italic' }}>All available panels are active</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function ARIntelliden({ pal, household, perm, persona, onPersonaChange }) {
   const [focus, setFocus] = React.useState('lamp');
   const [scene, setScene] = React.useState(perm.allowedScenes.length ? perm.allowedScenes[0] : 'focus');
@@ -147,9 +248,13 @@ function ARIntelliden({ pal, household, perm, persona, onPersonaChange }) {
   const [thermTarget, setThermTarget] = React.useState(21.5);
   const [blinds, setBlinds] = React.useState(40);
   const [speakerPlaying, setSpeakerPlaying] = React.useState(false);
+  const [sconces, setSconces] = React.useState(false);
+  const [strip, setStrip] = React.useState(true);
   const [doorLocked, setDoorLocked] = React.useState(true);
   const [personaOpen, setPersonaOpen] = React.useState(false);
   const [camsOpen, setCamsOpen] = React.useState(false);
+  const [manageOpen, setManageOpen] = React.useState(false);
+  const [activePanels, setActivePanels] = React.useState(['lamp', 'therm', 'blinds', 'speaker', 'door', 'cam']);
   const [toast, showToast] = useToast();
 
   const bg = AR_BG[pal.time] || AR_BG.day;
@@ -169,6 +274,8 @@ function ARIntelliden({ pal, household, perm, persona, onPersonaChange }) {
       setThermTarget(p.thermTarget);
       setBlinds(p.blinds);
       setSpeakerPlaying(p.speakerPlaying);
+      setSconces(p.sconcesOn);
+      setStrip(p.stripOn);
     }
   }, [scene]);
 
@@ -186,7 +293,108 @@ function ARIntelliden({ pal, household, perm, persona, onPersonaChange }) {
   const speakerToggle = () => { if (!perm.speakerHandoff && persona==='guest') return blockedToast('Hand-off owner-only'); setSpeakerPlaying(v=>!v); showToast(speakerPlaying?'Paused':'Playing'); };
   const tryLock = () => { if (!perm.lock) return blockedToast('Door lock owner-only'); setDoorLocked(v=>!v); showToast(doorLocked?'Door unlocked':'Door locked'); };
 
+  const addPanel = (id) => {
+    setActivePanels(prev => [...prev, id]);
+    showToast(`Panel · ${GADGET_CATALOG.find(g=>g.id===id)?.title}`);
+  };
+  const removePanel = (id) => {
+    setActivePanels(prev => prev.filter(p => p !== id));
+    showToast(`Removed · ${GADGET_CATALOG.find(g=>g.id===id)?.title}`, 'blocked');
+  };
+
   const sceneObj = SCENES.find(s=>s.id===scene);
+
+  const renderPanel = (id) => {
+    const g = GADGET_CATALOG.find(g => g.id === id);
+    if (!g) return null;
+    const common = {
+      key: id, pal, x: g.x, y: g.y, anchor: g.anchor, pin: g.pin,
+      focused: focus === id, onPick: () => setFocus(id), onRemove: () => removePanel(id),
+    };
+    switch(id) {
+      case 'lamp': return (
+        <ARPanel {...common} title="Floor lamp" big={`${lampPct}%`} sub="warm 2700K">
+          <div style={{ display:'flex', gap:6, marginTop:8 }}>
+            <button onClick={(e)=>{e.stopPropagation();lampStep(-10);}} style={panelBtn()}>−10%</button>
+            <button onClick={(e)=>{e.stopPropagation();lampStep(10);}} style={panelBtn()}>+10%</button>
+          </div>
+        </ARPanel>
+      );
+      case 'therm': return (
+        <ARPanel {...common} title="Thermostat" big={`${thermTarget.toFixed(1)}°`} sub={perm.thermostat?'auto · sun-aware':'view only · owner-only'} locked={!perm.thermostat}>
+          {perm.thermostat && (
+            <div style={{ display:'flex', gap:6, marginTop:8 }}>
+              <button onClick={(e)=>{e.stopPropagation();thermStep(-0.5);}} style={panelBtn()}>−0.5°</button>
+              <button onClick={(e)=>{e.stopPropagation();thermStep(0.5);}} style={panelBtn()}>+0.5°</button>
+            </div>
+          )}
+        </ARPanel>
+      );
+      case 'blinds': return (
+        <ARPanel {...common} title="Blinds" big={`${blinds}%`} sub="auto-tracking sun">
+          <input type="range" min="0" max="100" value={blinds} onChange={(e)=>setBlinds(+e.target.value)} onClick={(e)=>e.stopPropagation()} style={{ width:'100%', marginTop:8, accentColor: pal.warm }}/>
+        </ARPanel>
+      );
+      case 'speaker': return (
+        <ARPanel {...common} title="Speaker" big={speakerPlaying?'playing':'paused'} sub={perm.speakerHandoff?"june's session":'shared playback'} locked={!perm.speakerHandoff && persona==='guest'}>
+          <button onClick={(e)=>{e.stopPropagation();speakerToggle();}} style={panelBtn()}><Glyph name={speakerPlaying?'pause':'play'} size={11}/> {speakerPlaying?'Pause':'Play'}</button>
+        </ARPanel>
+      );
+      case 'door': return (
+        <ARPanel {...common} title="Front door" big={doorLocked?'locked':'open'} sub={perm.lock?(doorLocked?'secure · 2h':'unlocked'):'owner-only'} locked={!perm.lock}>
+          {perm.lock && <button onClick={(e)=>{e.stopPropagation();tryLock();}} style={panelBtn()}><Glyph name={doorLocked?'unlock':'lock'} size={11}/> {doorLocked?'Unlock':'Lock'}</button>}
+        </ARPanel>
+      );
+      case 'cam': return (
+        <ARPanel {...common} title="Camera" big={perm.cameras?'2 live':'hidden'} sub={perm.cameras?'front · garden':'no access'} locked={!perm.cameras}>
+          {perm.cameras && (
+            <button onClick={(e)=>{e.stopPropagation();setCamsOpen(true);}} style={{ ...panelBtn(), marginTop: 8 }}>
+              <Glyph name="cam" size={11}/> View feeds
+            </button>
+          )}
+          {perm.cameras && <div style={{ fontSize: 10, opacity: 0.5, marginTop: 6, fontFamily: '"JetBrains Mono", ui-monospace, monospace' }}>garden · motion detected</div>}
+        </ARPanel>
+      );
+      case 'air': return (
+        <ARPanel {...common} title="Air quality" big="312" sub="ppm CO₂ · rising">
+          <div style={{ marginTop: 8 }}>
+            <div style={{ height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.08)', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '39%', background: 'oklch(0.72 0.14 70)', borderRadius: 2 }}/>
+            </div>
+            <div style={{ fontSize: 9.5, opacity: 0.45, marginTop: 4, fontFamily: '"JetBrains Mono", ui-monospace, monospace' }}>threshold 800 ppm</div>
+          </div>
+        </ARPanel>
+      );
+      case 'energy': return (
+        <ARPanel {...common} title="Energy today" big={ENERGY.todayKwh.toFixed(2)} sub="kWh · ↘ 19% vs yesterday">
+          {perm.energy
+            ? <div style={{ fontSize: 9.5, opacity: 0.5, marginTop: 6, fontFamily: '"JetBrains Mono", ui-monospace, monospace' }}>budget {ENERGY.monthSoFar.toFixed(0)} / {ENERGY.monthBudget} kWh</div>
+            : <div style={{ fontSize: 9.5, opacity: 0.4, marginTop: 6, fontFamily: '"JetBrains Mono", ui-monospace, monospace' }}>energy hidden · owner-only</div>
+          }
+        </ARPanel>
+      );
+      case 'plug': return (
+        <ARPanel {...common} title="Smart plug" big="42W" sub="3 active · kitchen">
+          <div style={{ fontSize: 9.5, opacity: 0.45, marginTop: 6, fontFamily: '"JetBrains Mono", ui-monospace, monospace' }}>coffee maker · dishwasher</div>
+        </ARPanel>
+      );
+      case 'sconces': return (
+        <ARPanel {...common} title="Sconces" big={sconces?'on':'off'} sub={sconces?'warm 3000K':'last 21:14'}>
+          <button onClick={(e)=>{e.stopPropagation();setSconces(v=>!v);showToast(`Sconces ${!sconces?'on':'off'}`);}} style={panelBtn()}>
+            {sconces?'Turn off':'Turn on'}
+          </button>
+        </ARPanel>
+      );
+      case 'strip': return (
+        <ARPanel {...common} title="LED strip" big={strip?'amber':'off'} sub={strip?'dimmed 22%':'off'}>
+          <button onClick={(e)=>{e.stopPropagation();setStrip(v=>!v);showToast(`Strip ${!strip?'on':'off'}`);}} style={panelBtn()}>
+            {strip?'Turn off':'Turn on'}
+          </button>
+        </ARPanel>
+      );
+      default: return null;
+    }
+  };
 
   return (
     <div style={{
@@ -194,7 +402,6 @@ function ARIntelliden({ pal, household, perm, persona, onPersonaChange }) {
       fontFamily: '"Geist", -apple-system, system-ui, sans-serif', color: '#fff',
       background: bg.bg, WebkitFontSmoothing: 'antialiased',
     }}>
-      {/* Architecture */}
       <ARRoomScene key={room} roomId={room} bg={bg} pal={pal} lampPct={lampPct} />
 
       <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none',
@@ -247,49 +454,8 @@ function ARIntelliden({ pal, household, perm, persona, onPersonaChange }) {
         })}
       </div>
 
-      {/* Anchored draggable panels */}
-      <ARPanel pal={pal} x="44%" y="22%" anchor="bottom-right" pin="Floor lamp" focused={focus==='lamp'}
-        title="Floor lamp" big={`${lampPct}%`} sub="warm 2700K" onPick={()=>setFocus('lamp')}>
-        <div style={{ display:'flex', gap:6, marginTop:8 }}>
-          <button onClick={(e)=>{e.stopPropagation();lampStep(-10);}} style={panelBtn()}>−10%</button>
-          <button onClick={(e)=>{e.stopPropagation();lampStep(10);}} style={panelBtn()}>+10%</button>
-        </div>
-      </ARPanel>
-
-      <ARPanel pal={pal} x="76%" y="36%" anchor="left" pin="Climate" focused={focus==='therm'}
-        title="Thermostat" big={`${thermTarget.toFixed(1)}°`} sub={perm.thermostat?'auto · sun-aware':'view only · owner-only'} onPick={()=>setFocus('therm')} locked={!perm.thermostat}>
-        {perm.thermostat ? (
-          <div style={{ display:'flex', gap:6, marginTop:8 }}>
-            <button onClick={(e)=>{e.stopPropagation();thermStep(-0.5);}} style={panelBtn()}>−0.5°</button>
-            <button onClick={(e)=>{e.stopPropagation();thermStep(0.5);}} style={panelBtn()}>+0.5°</button>
-          </div>
-        ) : null}
-      </ARPanel>
-
-      <ARPanel pal={pal} x="14%" y="44%" anchor="right" pin="Blinds" focused={focus==='blinds'}
-        title="Blinds" big={`${blinds}%`} sub="auto-tracking sun" onPick={()=>setFocus('blinds')}>
-        <input type="range" min="0" max="100" value={blinds} onChange={(e)=>setBlinds(+e.target.value)} onClick={(e)=>e.stopPropagation()} style={{ width:'100%', marginTop:8, accentColor: pal.warm }}/>
-      </ARPanel>
-
-      <ARPanel pal={pal} x="68%" y="68%" anchor="top-left" pin="Speaker" focused={focus==='speaker'}
-        title="Speaker" big={speakerPlaying?'playing':'paused'} sub={perm.speakerHandoff?"june's session":'shared playback'} onPick={()=>setFocus('speaker')} locked={!perm.speakerHandoff && persona==='guest'}>
-        <button onClick={(e)=>{e.stopPropagation();speakerToggle();}} style={panelBtn()}><Glyph name={speakerPlaying?'pause':'play'} size={11}/> {speakerPlaying?'Pause':'Play'}</button>
-      </ARPanel>
-
-      <ARPanel pal={pal} x="88%" y="48%" anchor="left" pin="Front door" focused={focus==='door'}
-        title="Front door" big={doorLocked?'locked':'open'} sub={perm.lock?(doorLocked?'secure · 2h':'unlocked'):'owner-only'} onPick={()=>setFocus('door')} locked={!perm.lock}>
-        {perm.lock && <button onClick={(e)=>{e.stopPropagation();tryLock();}} style={panelBtn()}><Glyph name={doorLocked?'unlock':'lock'} size={11}/> {doorLocked?'Unlock':'Lock'}</button>}
-      </ARPanel>
-
-      <ARPanel pal={pal} x="30%" y="68%" anchor="top-right" pin="Camera" focused={focus==='cam'}
-        title="Camera" big={perm.cameras?'2 live':'hidden'} sub={perm.cameras?'front · garden':'no access'} onPick={()=>setFocus('cam')} locked={!perm.cameras}>
-        {perm.cameras && (
-          <button onClick={(e)=>{e.stopPropagation();setCamsOpen(true);}} style={{ ...panelBtn(), marginTop: 8 }}>
-            <Glyph name="cam" size={11}/> View feeds
-          </button>
-        )}
-        {perm.cameras && <div style={{ fontSize: 10, opacity: 0.5, marginTop: 6, fontFamily: '"JetBrains Mono", ui-monospace, monospace' }}>garden · motion detected</div>}
-      </ARPanel>
+      {/* Dynamic panels */}
+      {activePanels.map(id => renderPanel(id))}
 
       {/* Mini-map */}
       <div style={{ position: 'absolute', bottom: 32, left: 32, width: 220,
@@ -300,7 +466,7 @@ function ARIntelliden({ pal, household, perm, persona, onPersonaChange }) {
           <FloorPlan pal={{ ...pal, line: 'rgba(255,255,255,0.18)', muted: 'rgba(255,255,255,0.6)', warm: pal.warm }} active={room} onPick={(id) => pickRoom(ROOMS.find(r=>r.id===id) || ROOMS[0])} perm={perm}/>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9.5, opacity: 0.6, fontFamily: '"JetBrains Mono", ui-monospace, monospace', marginTop: 4 }}>
-          <span>{visibleRooms(perm).length} rooms</span><span>{perm.energy?'32':'2'} devices</span>
+          <span>{visibleRooms(perm).length} rooms</span><span>{activePanels.length} panels</span>
         </div>
         {perm.energy && (
           <div style={{ marginTop: 8, paddingTop: 8, borderTop: '0.5px solid rgba(255,255,255,0.12)' }}>
@@ -337,7 +503,24 @@ function ARIntelliden({ pal, household, perm, persona, onPersonaChange }) {
             </button>
           );
         })}
-        <div style={{ width: 1, height: 22, background: 'rgba(255,255,255,0.14)', margin: '0 4px' }}/>
+        <div style={{ width: 1, height: 22, background: 'rgba(255,255,255,0.14)', margin: '0 2px' }}/>
+        {/* Manage panels button */}
+        <button onClick={() => setManageOpen(true)} className="int-press" style={{
+          height: 36, padding: '0 14px', borderRadius: 18, border: '0.5px solid rgba(255,255,255,0.18)',
+          background: manageOpen ? pal.warm : 'rgba(255,255,255,0.06)',
+          color: '#fff', display: 'flex', alignItems: 'center', gap: 6,
+          fontSize: 11, fontWeight: 500, fontFamily: '"JetBrains Mono", ui-monospace, monospace',
+          letterSpacing: '.04em', cursor: 'pointer',
+        }}>
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <rect x="1" y="1" width="5" height="5" rx="1.2" stroke="currentColor" strokeWidth="1.2"/>
+            <rect x="8" y="1" width="5" height="5" rx="1.2" stroke="currentColor" strokeWidth="1.2"/>
+            <rect x="1" y="8" width="5" height="5" rx="1.2" stroke="currentColor" strokeWidth="1.2"/>
+            <rect x="8" y="8" width="5" height="5" rx="1.2" stroke="currentColor" strokeWidth="1.2"/>
+          </svg>
+          Panels
+        </button>
+        <div style={{ width: 1, height: 22, background: 'rgba(255,255,255,0.14)', margin: '0 2px' }}/>
         <div style={{ height: 36, padding: '0 12px', display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'rgba(255,255,255,0.78)', fontFamily: '"JetBrains Mono", ui-monospace, monospace', letterSpacing: '.04em' }}>
           <Glyph name="hand" size={13} stroke="currentColor"/> drag · pinch · gaze
         </div>
@@ -374,6 +557,7 @@ function ARIntelliden({ pal, household, perm, persona, onPersonaChange }) {
         <div style={{ position: 'absolute', inset: 9, borderRadius: 2, background: 'rgba(255,255,255,0.85)' }}/>
       </div>
 
+      {manageOpen && <ARManageDrawer pal={pal} activePanels={activePanels} onAdd={addPanel} onRemove={removePanel} onClose={() => setManageOpen(false)}/>}
       {camsOpen && <ARCameraOverlay pal={pal} onClose={() => setCamsOpen(false)}/>}
       {personaOpen && <PersonaSwitcherModal pal={pal} persona={persona} onPersonaChange={onPersonaChange} onClose={() => setPersonaOpen(false)} glass />}
       <Toast toast={toast} pal={pal}/>
@@ -392,7 +576,7 @@ const AR_BG = {
   night:{ bg: 'linear-gradient(170deg, oklch(0.18 0.02 260) 0%, oklch(0.08 0.018 260) 75%)', window: 'oklch(0.30 0.05 260)', windowGlow: 'oklch(0.30 0.05 260 / 0.5)', frame: 'oklch(0.30 0.02 260)', floor: 'linear-gradient(180deg, oklch(0.12 0.018 260) 0%, oklch(0.06 0.018 260) 100%)', line: 'rgba(255,255,255,0.06)', lamp: 'oklch(0.20 0.02 260)', sofa: 'oklch(0.14 0.018 260)' },
 };
 
-function ARPanel({ pal, x, y, anchor, pin, title, big, sub, focused, onPick, locked, children }) {
+function ARPanel({ pal, x, y, anchor, pin, title, big, sub, focused, onPick, locked, onRemove, children }) {
   const [offset, setOffset] = React.useState({ x: 0, y: 0 });
   const dragging = React.useRef(false);
   const start = React.useRef({ mx: 0, my: 0, ox: 0, oy: 0 });
@@ -425,7 +609,6 @@ function ARPanel({ pal, x, y, anchor, pin, title, big, sub, focused, onPick, loc
         transform: `translate(calc(-50% + ${offset.x}px), calc(-50% + ${offset.y}px))`,
         cursor: 'grab', userSelect: 'none', touchAction: 'none',
       }}>
-      {/* Connector line */}
       <div style={{ position: 'absolute',
         width: 1, height: 36, background: 'rgba(255,255,255,0.35)',
         left: a === 'left' ? -36 : (a === 'right' ? 'calc(100% + 36px)' : '50%'),
@@ -441,13 +624,22 @@ function ARPanel({ pal, x, y, anchor, pin, title, big, sub, focused, onPick, loc
         boxShadow: focused ? `0 0 0 4px ${pal.warm}22, 0 12px 40px rgba(0,0,0,0.35)` : '0 8px 24px rgba(0,0,0,0.25)',
         opacity: locked ? 0.78 : 1,
       }}>
-        {/* Drag handle */}
         <div style={{ position: 'absolute', top: 7, left: '50%', transform: 'translateX(-50%)', width: 28, height: 3, borderRadius: 2, background: 'rgba(255,255,255,0.18)', pointerEvents: 'none' }}/>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ fontSize: 9.5, letterSpacing: '.18em', textTransform: 'uppercase', opacity: 0.6, fontFamily: '"JetBrains Mono", ui-monospace, monospace', display:'flex', alignItems:'center', gap:4 }}>
             <Glyph name={locked?'lock':'pin'} size={10} stroke="currentColor"/> {pin}
           </div>
-          {focused && !locked && <div style={{ width: 6, height: 6, borderRadius: 3, background: pal.warm }}/>}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            {focused && !locked && <div style={{ width: 6, height: 6, borderRadius: 3, background: pal.warm }}/>}
+            {onRemove && (
+              <button onClick={(e) => { e.stopPropagation(); onRemove(); }} style={{
+                width: 18, height: 18, borderRadius: 9, padding: 0,
+                background: 'rgba(255,255,255,0.08)', border: '0.5px solid rgba(255,255,255,0.18)',
+                color: 'rgba(255,255,255,0.5)', fontSize: 13, lineHeight: 1,
+                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>×</button>
+            )}
+          </div>
         </div>
         <div style={{ fontSize: 13, fontWeight: 500, marginTop: 6 }}>{title}</div>
         <div style={{ fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 32, lineHeight: 1, marginTop: 4, letterSpacing: -0.3 }}>{big}</div>
