@@ -312,9 +312,9 @@ function TabletIntelliden({ pal, household, perm, persona, onPersonaChange }) {
 
       {/* Home dashboard */}
       {dock === 'home' && (
-        <div style={{ flex: 1, padding: '20px 24px 8px', display: 'grid', gridTemplateColumns: '300px 1fr 300px', gap: 18, minHeight: 0, overflow: 'hidden' }}>
+        <div style={{ flex: 1, padding: '20px 24px 8px', display: 'grid', gridTemplateColumns: '260px 1fr 260px', gap: 16, minHeight: 0, overflowY: 'auto', overflowX: 'hidden' }}>
           {/* LEFT */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14, minHeight: 0 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14, minHeight: 0, minWidth: 0 }}>
             <div>
               <div style={{ fontSize: 10.5, letterSpacing: '.18em', textTransform: 'uppercase', color: muted, fontFamily: '"JetBrains Mono", ui-monospace, monospace' }}>This home</div>
               <div style={{ fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 50, lineHeight: 1, letterSpacing: -0.6, marginTop: 4 }}>
@@ -362,7 +362,7 @@ function TabletIntelliden({ pal, household, perm, persona, onPersonaChange }) {
           </div>
 
           {/* CENTER */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14, minHeight: 0 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14, minHeight: 0, minWidth: 0 }}>
             <div style={{ ...card, padding: 22, position: 'relative', overflow: 'hidden', background: pal.warm + (isDark ? '18' : '12') }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
@@ -410,6 +410,7 @@ function TabletIntelliden({ pal, household, perm, persona, onPersonaChange }) {
               </div>
             </div>
 
+            {room === 'living' && (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, flex: 1 }}>
               <DeviceCard pal={pal} title="Floor lamp" icon="bulb" value={floorLamp?'64%':'off'} sub="warm 2700K" on={floorLamp} onClick={()=>{setFloorLamp(v=>!v);showToast(`Floor lamp ${!floorLamp?'on':'off'}`);}}/>
               <DeviceCard pal={pal} title="Sconces" icon="lamp" value={sconces?'on':'off'} sub={sconces?'now':'last 21:14'} on={sconces} onClick={()=>{setSconces(v=>!v);showToast(`Sconces ${!sconces?'on':'off'}`);}}/>
@@ -419,17 +420,49 @@ function TabletIntelliden({ pal, household, perm, persona, onPersonaChange }) {
               </DeviceCard>
               <DeviceCard pal={pal} title="Speaker" icon={speakerPlaying?'pause':'play'} value={speakerPlaying?'playing':'paused'} sub={perm.speakerHandoff?"june's session":'shared playback'} on={speakerPlaying} locked={!perm.speakerHandoff && persona==='guest'}
                 onClick={()=>{ if(!perm.speakerHandoff && persona==='guest') return blockedToast('Hand-off owner-only'); setSpeakerPlaying(v=>!v); showToast(`${!speakerPlaying?'Playing':'Paused'}`); }}/>
-              <DeviceCard pal={pal} title="Air" icon="wave" value="312 ppm" sub="CO₂ rising" on={true}/>
-              <DeviceCard pal={pal} title="Front door" icon={doorLocked?'lock':'unlock'} value={doorLocked?'locked':'unlocked'} sub={doorLocked?'secure · 2h':'open'} on={doorLocked} locked={!perm.lock}
-                onClick={tryLock}/>
-              <DeviceCard pal={pal} title="Camera" icon="cam" value={perm.cameras?'2 live':'hidden'} sub={perm.cameras?'front · garden':'no access'} on={perm.cameras} locked={!perm.cameras}
-                onClick={()=>{ if(!perm.cameras) return blockedToast('Cameras owner-only'); setDock('cams'); }}/>
-              <DeviceCard pal={pal} title="Smart plug" icon="plug" value="42W" sub="3 active · kitchen" on={true}/>
+              <DeviceCard pal={pal} title="Air quality" icon="wave" value="312 ppm" sub="CO₂ rising" on={true}/>
+              <DeviceCard pal={pal} title="Front door" icon={doorLocked?'lock':'unlock'} value={doorLocked?'locked':'unlocked'} sub={doorLocked?'secure · 2h':'open'} on={doorLocked} locked={!perm.lock} onClick={tryLock}/>
+              <DeviceCard pal={pal} title="Camera" icon="cam" value={perm.cameras?'2 live':'hidden'} sub={perm.cameras?'front · garden':'no access'} on={perm.cameras} locked={!perm.cameras} onClick={()=>{ if(!perm.cameras) return blockedToast('Cameras owner-only'); }}/>
+              <DeviceCard pal={pal} title="Smart plug" icon="plug" value="42W" sub="3 active" on={true}/>
             </div>
+          )}
+          {room === 'kitchen' && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, flex: 1 }}>
+              <DeviceCard pal={pal} title="Pendants" icon="bulb" value="on · 80%" sub="3 bulbs · warm" on={true} onClick={()=>showToast('Pendants 80%')}/>
+              <DeviceCard pal={pal} title="Coffee maker" icon="plug" value="standby" sub="3W · idle" on={false}/>
+              <DeviceCard pal={pal} title="Air sensor" icon="wave" value="22.1°" sub="CO₂ ok · 380 ppm" on={true}/>
+              <DeviceCard pal={pal} title="Smart plug" icon="plug" value="42W" sub="dishwasher · active" on={true}/>
+              <DeviceCard pal={pal} title="Thermostat" icon="therm" value={`${thermTarget.toFixed(1)}°`} sub={perm.thermostat?'climate · auto':'view only'} on={true} locked={!perm.thermostat} onClick={()=>!perm.thermostat&&blockedToast('Thermostat owner-only')}/>
+            </div>
+          )}
+          {room === 'bed' && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, flex: 1 }}>
+              <DeviceCard pal={pal} title="Bedside lamp" icon="bulb" value="off" sub="warm · manual" on={false} onClick={()=>showToast('Bedside lamp on')}/>
+              <DeviceCard pal={pal} title="Blinds" icon="blind" value="closed" sub="blackout · manual" on={false} onClick={()=>showToast('Blinds open')}/>
+              <DeviceCard pal={pal} title="Mini speaker" icon="play" value="off" sub="bedroom" on={false} onClick={()=>showToast('Speaker on')}/>
+              <DeviceCard pal={pal} title="Thermostat" icon="therm" value={`${thermTarget.toFixed(1)}°`} sub={perm.thermostat?'climate · auto':'view only'} on={true} locked={!perm.thermostat} onClick={()=>!perm.thermostat&&blockedToast('Thermostat owner-only')}/>
+            </div>
+          )}
+          {room === 'studio' && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, flex: 1 }}>
+              <DeviceCard pal={pal} title="Desk lamp" icon="bulb" value="on · 40%" sub="warm 2700K" on={true} onClick={()=>showToast('Desk lamp toggled')}/>
+              <DeviceCard pal={pal} title="Monitor" icon="plug" value="28W" sub="active" on={true}/>
+              <DeviceCard pal={pal} title="Smart plug" icon="plug" value="12W" sub="audio interface" on={true}/>
+              <DeviceCard pal={pal} title="Air sensor" icon="wave" value="21.8°" sub="CO₂ ok" on={true}/>
+            </div>
+          )}
+          {room === 'garden' && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, flex: 1 }}>
+              <DeviceCard pal={pal} title="Path lights" icon="bulb" value="off" sub="dusk-timer · auto" on={false} onClick={()=>showToast('Path lights on')}/>
+              <DeviceCard pal={pal} title="Garden cam" icon="cam" value={perm.cameras?'live':'hidden'} sub={perm.cameras?'rear · outdoor':'no access'} on={perm.cameras} locked={!perm.cameras} onClick={()=>!perm.cameras&&blockedToast('Cameras owner-only')}/>
+              <DeviceCard pal={pal} title="Smart plug" icon="plug" value="8W" sub="outdoor · irrigation" on={true}/>
+              <DeviceCard pal={pal} title="Air quality" icon="wave" value="outdoor" sub="AQI 32 · good" on={true}/>
+            </div>
+          )}
           </div>
 
           {/* RIGHT */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14, minHeight: 0 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14, minHeight: 0, minWidth: 0 }}>
             {perm.energy ? (
               <div style={{ ...card, padding: 16 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
