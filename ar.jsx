@@ -81,6 +81,64 @@ function ARRoomScene({ roomId, bg, pal, lampPct }) {
   );
 }
 
+function ARCameraOverlay({ pal, onClose }) {
+  const cams = [
+    { name: 'Front door', loc: 'Entry', motion: false },
+    { name: 'Garden', loc: 'Backyard', motion: true },
+  ];
+  return (
+    <div className="int-fadein" style={{
+      position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', zIndex: 200,
+    }}>
+      <div style={{
+        background: 'rgba(18,14,10,0.90)', backdropFilter: 'blur(28px)', WebkitBackdropFilter: 'blur(28px)',
+        border: '0.5px solid rgba(255,255,255,0.16)', borderRadius: 24, padding: 24, width: 520,
+        boxShadow: '0 24px 80px rgba(0,0,0,0.5)',
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
+          <div>
+            <div style={{ fontFamily: '"Instrument Serif", Georgia, serif', fontSize: 28, color: '#fff' }}>Camera feeds</div>
+            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.45)', fontFamily: '"JetBrains Mono", ui-monospace, monospace', marginTop: 2 }}>2 live · motion detected in garden</div>
+          </div>
+          <button onClick={onClose} className="int-press" style={{ width: 32, height: 32, borderRadius: 16, background: 'rgba(255,255,255,0.08)', border: '0.5px solid rgba(255,255,255,0.16)', color: '#fff', cursor: 'pointer', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          {cams.map(cam => (
+            <div key={cam.name} style={{ borderRadius: 14, overflow: 'hidden', border: '0.5px solid rgba(255,255,255,0.10)' }}>
+              <div style={{ height: 150, background: '#030303', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Glyph name="cam" size={22} stroke="rgba(255,255,255,0.08)"/>
+                {cam.motion && (
+                  <div style={{ position: 'absolute', top: 8, left: 8, background: pal.warm, color: '#fff', fontSize: 8, fontWeight: 700, padding: '2px 6px', borderRadius: 5, letterSpacing: '.06em', fontFamily: '"JetBrains Mono", ui-monospace, monospace' }}>MOTION</div>
+                )}
+                <div style={{ position: 'absolute', top: 8, right: 8, display: 'flex', alignItems: 'center', gap: 4, fontSize: 8.5, color: 'rgba(255,255,255,0.55)', fontFamily: '"JetBrains Mono", ui-monospace, monospace' }}>
+                  <div style={{ width: 4, height: 4, borderRadius: 2, background: 'oklch(0.62 0.22 25)', animation: 'int-pulse 1.4s ease-in-out infinite' }}/>
+                  REC
+                </div>
+                <div style={{ position: 'absolute', bottom: 6, left: 8, fontSize: 8.5, color: 'rgba(255,255,255,0.3)', fontFamily: '"JetBrains Mono", ui-monospace, monospace' }}>9:24:08</div>
+              </div>
+              <div style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.04)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 500, color: '#fff' }}>{cam.name}</div>
+                  <div style={{ fontSize: 10, opacity: 0.45, fontFamily: '"JetBrains Mono", ui-monospace, monospace', marginTop: 1 }}>{cam.loc}</div>
+                </div>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <button className="int-press" style={{ width: 26, height: 26, borderRadius: 13, background: 'rgba(255,255,255,0.06)', border: '0.5px solid rgba(255,255,255,0.12)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Glyph name="mic" size={11} stroke="rgba(255,255,255,0.5)"/>
+                  </button>
+                  <button className="int-press" style={{ width: 26, height: 26, borderRadius: 13, background: 'rgba(255,255,255,0.06)', border: '0.5px solid rgba(255,255,255,0.12)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Glyph name="eyeoff" size={11} stroke="rgba(255,255,255,0.5)"/>
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ARIntelliden({ pal, household, perm, persona, onPersonaChange }) {
   const [focus, setFocus] = React.useState('lamp');
   const [scene, setScene] = React.useState(perm.allowedScenes.length ? perm.allowedScenes[0] : 'focus');
@@ -91,6 +149,7 @@ function ARIntelliden({ pal, household, perm, persona, onPersonaChange }) {
   const [speakerPlaying, setSpeakerPlaying] = React.useState(false);
   const [doorLocked, setDoorLocked] = React.useState(true);
   const [personaOpen, setPersonaOpen] = React.useState(false);
+  const [camsOpen, setCamsOpen] = React.useState(false);
   const [toast, showToast] = useToast();
 
   const bg = AR_BG[pal.time] || AR_BG.day;
@@ -136,7 +195,7 @@ function ARIntelliden({ pal, household, perm, persona, onPersonaChange }) {
       background: bg.bg, WebkitFontSmoothing: 'antialiased',
     }}>
       {/* Architecture */}
-      <ARRoomScene roomId={room} bg={bg} pal={pal} lampPct={lampPct} />
+      <ARRoomScene key={room} roomId={room} bg={bg} pal={pal} lampPct={lampPct} />
 
       <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none',
         background: `radial-gradient(ellipse at 50% 50%, transparent 50%, rgba(0,0,0,.35) 100%)` }}/>
@@ -188,7 +247,7 @@ function ARIntelliden({ pal, household, perm, persona, onPersonaChange }) {
         })}
       </div>
 
-      {/* Anchored panels — gated per persona */}
+      {/* Anchored draggable panels */}
       <ARPanel pal={pal} x="44%" y="22%" anchor="bottom-right" pin="Floor lamp" focused={focus==='lamp'}
         title="Floor lamp" big={`${lampPct}%`} sub="warm 2700K" onPick={()=>setFocus('lamp')}>
         <div style={{ display:'flex', gap:6, marginTop:8 }}>
@@ -224,7 +283,12 @@ function ARIntelliden({ pal, household, perm, persona, onPersonaChange }) {
 
       <ARPanel pal={pal} x="30%" y="68%" anchor="top-right" pin="Camera" focused={focus==='cam'}
         title="Camera" big={perm.cameras?'2 live':'hidden'} sub={perm.cameras?'front · garden':'no access'} onPick={()=>setFocus('cam')} locked={!perm.cameras}>
-        {perm.cameras && <div style={{ fontSize: 10, opacity: 0.6, marginTop: 6, fontFamily: '"JetBrains Mono", ui-monospace, monospace' }}>motion · none</div>}
+        {perm.cameras && (
+          <button onClick={(e)=>{e.stopPropagation();setCamsOpen(true);}} style={{ ...panelBtn(), marginTop: 8 }}>
+            <Glyph name="cam" size={11}/> View feeds
+          </button>
+        )}
+        {perm.cameras && <div style={{ fontSize: 10, opacity: 0.5, marginTop: 6, fontFamily: '"JetBrains Mono", ui-monospace, monospace' }}>garden · motion detected</div>}
       </ARPanel>
 
       {/* Mini-map */}
@@ -275,7 +339,7 @@ function ARIntelliden({ pal, household, perm, persona, onPersonaChange }) {
         })}
         <div style={{ width: 1, height: 22, background: 'rgba(255,255,255,0.14)', margin: '0 4px' }}/>
         <div style={{ height: 36, padding: '0 12px', display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'rgba(255,255,255,0.78)', fontFamily: '"JetBrains Mono", ui-monospace, monospace', letterSpacing: '.04em' }}>
-          <Glyph name="hand" size={13} stroke="currentColor"/> pinch · drag · gaze
+          <Glyph name="hand" size={13} stroke="currentColor"/> drag · pinch · gaze
         </div>
       </div>
 
@@ -310,6 +374,7 @@ function ARIntelliden({ pal, household, perm, persona, onPersonaChange }) {
         <div style={{ position: 'absolute', inset: 9, borderRadius: 2, background: 'rgba(255,255,255,0.85)' }}/>
       </div>
 
+      {camsOpen && <ARCameraOverlay pal={pal} onClose={() => setCamsOpen(false)}/>}
       {personaOpen && <PersonaSwitcherModal pal={pal} persona={persona} onPersonaChange={onPersonaChange} onClose={() => setPersonaOpen(false)} glass />}
       <Toast toast={toast} pal={pal}/>
     </div>
@@ -328,22 +393,56 @@ const AR_BG = {
 };
 
 function ARPanel({ pal, x, y, anchor, pin, title, big, sub, focused, onPick, locked, children }) {
+  const [offset, setOffset] = React.useState({ x: 0, y: 0 });
+  const dragging = React.useRef(false);
+  const start = React.useRef({ mx: 0, my: 0, ox: 0, oy: 0 });
+
+  const onPointerDown = (e) => {
+    if (e.target.closest('button') || e.target.closest('input')) return;
+    dragging.current = true;
+    start.current = { mx: e.clientX, my: e.clientY, ox: offset.x, oy: offset.y };
+    e.currentTarget.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  };
+  const onPointerMove = (e) => {
+    if (!dragging.current) return;
+    setOffset({
+      x: start.current.ox + (e.clientX - start.current.mx),
+      y: start.current.oy + (e.clientY - start.current.my),
+    });
+  };
+  const onPointerUp = () => { dragging.current = false; };
+
   const [a] = (anchor || 'top-left').split('-');
   return (
-    <div onClick={onPick} style={{ position: 'absolute', left: x, top: y, transform: 'translate(-50%,-50%)', cursor: 'pointer' }}>
+    <div
+      onClick={onPick}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      style={{
+        position: 'absolute', left: x, top: y,
+        transform: `translate(calc(-50% + ${offset.x}px), calc(-50% + ${offset.y}px))`,
+        cursor: 'grab', userSelect: 'none', touchAction: 'none',
+      }}>
+      {/* Connector line */}
       <div style={{ position: 'absolute',
         width: 1, height: 36, background: 'rgba(255,255,255,0.35)',
         left: a === 'left' ? -36 : (a === 'right' ? 'calc(100% + 36px)' : '50%'),
         top: a === 'top' ? -36 : (a === 'bottom' ? 'calc(100% + 36px)' : '50%'),
-        transform: a === 'left' || a === 'right' ? 'rotate(90deg)' : 'none' }}/>
+        transform: a === 'left' || a === 'right' ? 'rotate(90deg)' : 'none',
+        pointerEvents: 'none',
+      }}/>
       <div className={focused ? 'int-fadein' : ''} style={{
         background: focused ? 'rgba(28,22,16,0.78)' : 'rgba(20,16,12,0.55)',
         backdropFilter: 'blur(24px) saturate(160%)', WebkitBackdropFilter: 'blur(24px) saturate(160%)',
         border: focused ? `0.5px solid ${pal.warm}` : '0.5px solid rgba(255,255,255,0.16)',
-        borderRadius: 18, padding: 14, minWidth: 200,
+        borderRadius: 18, padding: '16px 14px 14px', minWidth: 200,
         boxShadow: focused ? `0 0 0 4px ${pal.warm}22, 0 12px 40px rgba(0,0,0,0.35)` : '0 8px 24px rgba(0,0,0,0.25)',
         opacity: locked ? 0.78 : 1,
       }}>
+        {/* Drag handle */}
+        <div style={{ position: 'absolute', top: 7, left: '50%', transform: 'translateX(-50%)', width: 28, height: 3, borderRadius: 2, background: 'rgba(255,255,255,0.18)', pointerEvents: 'none' }}/>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ fontSize: 9.5, letterSpacing: '.18em', textTransform: 'uppercase', opacity: 0.6, fontFamily: '"JetBrains Mono", ui-monospace, monospace', display:'flex', alignItems:'center', gap:4 }}>
             <Glyph name={locked?'lock':'pin'} size={10} stroke="currentColor"/> {pin}
