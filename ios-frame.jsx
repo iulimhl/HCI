@@ -198,6 +198,8 @@ function IOSDevice({
       boxShadow: '0 40px 80px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.12)',
       fontFamily: '-apple-system, system-ui, sans-serif',
       WebkitFontSmoothing: 'antialiased',
+      maskImage: 'radial-gradient(white, black)', /* Fixes border-radius clipping issues in WebKit */
+      WebkitMaskImage: '-webkit-radial-gradient(white, black)'
     }}>
       {/* dynamic island */}
       <div style={{

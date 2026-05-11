@@ -49,7 +49,7 @@ function App() {
         <DCSection id="dash" title="Intelliden — One home, four surfaces"
           subtitle="A single smart-home OS, tuned for each form factor. Same household data across all four.">
 
-          <DCArtboard id="phone" label="Phone · iOS · 402 × 874" width={402} height={874}>
+          <DCArtboard id="phone" label="Phone · iOS · 402 × 874" width={402} height={874} style={{ borderRadius: 48, background: 'transparent', boxShadow: 'none' }}>
             <IOSDevice width={402} height={874} dark={pal.mode === 'dark'}>
               <PhoneIntelliden pal={pal} household={household} perm={perm} persona={t.persona} onPersonaChange={(v) => setTweak('persona', v)}/>
             </IOSDevice>
@@ -88,7 +88,7 @@ function App() {
 
         <DCSection id="styleguide" title="Design System — Style Guide"
           subtitle="Colors, typography, icon rules and interface components used across Intelliden.">
-          <DCArtboard id="styleguide-main" label="Style Guide · Visual system" width={900} height={900}>
+          <DCArtboard id="styleguide-main" label="Style Guide · Visual system" width={900} height={1400}>
             <StyleGuide pal={pal}/>
           </DCArtboard>
         </DCSection>
